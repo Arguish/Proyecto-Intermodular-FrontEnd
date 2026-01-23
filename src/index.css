@@ -83,3 +83,9 @@
         @apply bg-dark-surface border-dark-border focus:ring-dark-primary-500;
     }
 }
+
+html,
+body,
+#root {
+  height: 100%;
+}
