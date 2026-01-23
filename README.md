@@ -1,5 +1,20 @@
 # Proyecto-Intermodular-FrontEnd
 
+<!-- TOC tocDepth:2..3 chapterDepth:2..6 -->
+
+- [🛠️ Stack Tecnológico](#🛠️-stack-tecnológico)
+- [🎨 Identidad Visual (IES El Rincón)](#🎨-identidad-visual-ies-el-rincón)
+    - [Modo Claro (Light Mode)](#modo-claro-light-mode)
+    - [Modo Oscuro (Dark Mode)](#modo-oscuro-dark-mode)
+- [🚀 Funcionalidades Principales](#🚀-funcionalidades-principales)
+- [📂 Estructura](#📂-estructura)
+- [📝 Backlog de Tareas - Frontend](#📝-backlog-de-tareas---frontend)
+    - [🎨 Diseño e Interfaz (Tailwind)](#🎨-diseño-e-interfaz-tailwind)
+    - [💻 Funcionalidades y UX](#💻-funcionalidades-y-ux)
+    - [⚖️ Legalidad y Calidad](#⚖️-legalidad-y-calidad)
+
+<!-- /TOC -->
+
 # IES El Rincón - Frontend (Portal de Reservas)
 
 Interfaz de usuario moderna y rápida para que el profesorado y el personal de conserjería gestionen el material del centro de forma eficiente.
@@ -114,3 +129,25 @@ Interfaz de usuario moderna y rápida para que el profesorado y el personal de c
 - `/styles`: Configuración de Tailwind y variables de color.
 
 **Responsables:** Antonio (Front / Legal) y Javier (Tech Lead / Front)
+
+## 📝 Backlog de Tareas - Frontend
+
+### 🎨 Diseño e Interfaz (Tailwind)
+
+- [ ] Configurar la paleta de colores corporativa `ieselrincon` en el theme de Tailwind.
+- [ ] [cite_start]Crear el componente Header con buscador de ítems y menú de usuario desplegable[cite: 210, 215].
+- [ ] [cite_start]Diseñar el Dashboard principal con la vista de calendario interactivo[cite: 211, 192].
+- [ ] [cite_start]Implementar el Sidebar derecho para gestión de cuenta e historial[cite: 215, 216].
+
+### 💻 Funcionalidades y UX
+
+- [ ] [cite_start]Desarrollar el formulario de login y guardado de sesión (Auth Guard)[cite: 185].
+- [ ] [cite_start]Crear el sistema de reserva mediante modales (Pop-ups) al hacer clic en días del calendario[cite: 211, 230].
+- [ ] [cite_start]Implementar la vista de búsqueda específica por objeto y disponibilidad de fechas próximas[cite: 213, 246].
+- [ ] [cite_start]Integrar botones de interacción para crear/eliminar reservas con mensajes de confirmación[cite: 194].
+- [ ] [cite_start]Programar la lógica de identificación de materiales mediante entrada de códigos de barras[cite: 190].
+
+### ⚖️ Legalidad y Calidad
+
+- [ ] [cite_start]Añadir avisos legales y cláusulas RGPD en los formularios de captura de datos.
+- [ ] [cite_start]Asegurar que la interfaz sea totalmente responsive para acceso desde cualquier navegador[cite: 199, 200].
