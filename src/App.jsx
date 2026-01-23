@@ -1,8 +1,8 @@
-import { Routes, Route, Link } from 'react-router-dom'
-import Home from './pages/Home'
-import Dashboard from './pages/Dashboard'
-import Login from './pages/Login'
-import ThemeToggle from './components/ThemeToggle'
+import { Routes, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import ThemeToggle from "./components/ThemeToggle";
 
 function App() {
   return (
@@ -14,10 +14,16 @@ function App() {
               <Link to="/" className="text-xl font-bold text-primary-500">
                 IES El Rincón
               </Link>
-              <Link to="/dashboard" className="text-text-secondary hover:text-text-primary">
+              <Link
+                to="/dashboard"
+                className="text-text-secondary hover:text-text-primary"
+              >
                 Dashboard
               </Link>
-              <Link to="/login" className="text-text-secondary hover:text-text-primary">
+              <Link
+                to="/login"
+                className="text-text-secondary hover:text-text-primary"
+              >
                 Login
               </Link>
             </div>
@@ -25,14 +31,14 @@ function App() {
           </div>
         </div>
       </nav>
-      
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
       </Routes>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
