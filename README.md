@@ -135,19 +135,19 @@ Interfaz de usuario moderna y rápida para que el profesorado y el personal de c
 ### 🎨 Diseño e Interfaz (Tailwind)
 
 - [ ] Configurar la paleta de colores corporativa `ieselrincon` en el theme de Tailwind.
-- [ ] [cite_start]Crear el componente Header con buscador de ítems y menú de usuario desplegable[cite: 210, 215].
-- [ ] [cite_start]Diseñar el Dashboard principal con la vista de calendario interactivo[cite: 211, 192].
-- [ ] [cite_start]Implementar el Sidebar derecho para gestión de cuenta e historial[cite: 215, 216].
+- [ ] Crear el componente Header con buscador de ítems y menú de usuario desplegable.
+- [ ] Diseñar el Dashboard principal con la vista de calendario interactivo.
+- [ ] Implementar el Sidebar derecho para gestión de cuenta e historial.
 
 ### 💻 Funcionalidades y UX
 
-- [ ] [cite_start]Desarrollar el formulario de login y guardado de sesión (Auth Guard)[cite: 185].
-- [ ] [cite_start]Crear el sistema de reserva mediante modales (Pop-ups) al hacer clic en días del calendario[cite: 211, 230].
-- [ ] [cite_start]Implementar la vista de búsqueda específica por objeto y disponibilidad de fechas próximas[cite: 213, 246].
-- [ ] [cite_start]Integrar botones de interacción para crear/eliminar reservas con mensajes de confirmación[cite: 194].
-- [ ] [cite_start]Programar la lógica de identificación de materiales mediante entrada de códigos de barras[cite: 190].
+- [ ] Desarrollar el formulario de login y guardado de sesión (Auth Guard).
+- [ ] Crear el sistema de reserva mediante modales (Pop-ups) al hacer clic en días del calendario.
+- [ ] Implementar la vista de búsqueda específica por objeto y disponibilidad de fechas próximas.
+- [ ] Integrar botones de interacción para crear/eliminar reservas con mensajes de confirmación.
+- [ ] Programar la lógica de identificación de materiales mediante entrada de códigos de barras.
 
 ### ⚖️ Legalidad y Calidad
 
-- [ ] [cite_start]Añadir avisos legales y cláusulas RGPD en los formularios de captura de datos.
-- [ ] [cite_start]Asegurar que la interfaz sea totalmente responsive para acceso desde cualquier navegador[cite: 199, 200].
+- [ ] Añadir avisos legales y cláusulas RGPD en los formularios de captura de datos.
+- [ ] Asegurar que la interfaz sea totalmente responsive para acceso desde cualquier navegador.
