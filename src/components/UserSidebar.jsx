@@ -1,4 +1,4 @@
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 import { useNavigate } from "react-router-dom";
 
 export default function UserSidebar({ isOpen, onClose }) {

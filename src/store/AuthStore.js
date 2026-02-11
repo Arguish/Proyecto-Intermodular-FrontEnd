@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { authAPI } from "../lib/api";
+import { authAPI } from "../utils/api";
 
 const useAuthStore = create(
     devtools(

@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
-import { materialAPI, aulasAPI, reservasAPI } from "../lib/api";
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
+import useReservasStore from "../store/ReservasStore";
+import useMaterialStore from "../store/MaterialStore";
+import useAulasStore from "../store/AulasStore";
 
-export default function ReservationForm({ onClose, selectedDate, onSuccess }) {
+export default function ReservationForm({ onBack, date, onSuccess }) {
     const { user } = useAuthStore();
+    const { createReserva } = useReservasStore();
+    const {
+        material,
+        fetchMaterial,
+        isLoading: loadingMaterial,
+    } = useMaterialStore();
+    const { aulas, fetchAulas, isLoading: loadingAulas } = useAulasStore();
+
+    // Compatibilidad: date o selectedDate
+    const selectedDate = date;
+
     const [formData, setFormData] = useState({
         material_id: "",
         aula_id: "",
@@ -12,31 +25,16 @@ export default function ReservationForm({ onClose, selectedDate, onSuccess }) {
         observaciones: "",
     });
 
-    const [material, setMaterial] = useState([]);
-    const [aulas, setAulas] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [loadingData, setLoadingData] = useState(true);
     const [error, setError] = useState("");
 
-    // Cargar material y aulas disponibles
+    const loadingData = loadingMaterial || loadingAulas;
+
+    // Cargar material y aulas disponibles desde stores
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [materialRes, aulasRes] = await Promise.all([
-                    materialAPI.getAll(),
-                    aulasAPI.getAll(),
-                ]);
-                setMaterial(materialRes.data.filter((item) => item.disponible));
-                setAulas(aulasRes.data.filter((item) => item.disponible));
-            } catch (err) {
-                console.error("Error al cargar datos:", err);
-                setError("Error al cargar el material y aulas disponibles");
-            } finally {
-                setLoadingData(false);
-            }
-        };
-        fetchData();
-    }, []);
+        fetchMaterial();
+        fetchAulas();
+    }, [fetchMaterial, fetchAulas]);
 
     // Formatear fecha seleccionada para los inputs
     useEffect(() => {
@@ -104,146 +102,155 @@ export default function ReservationForm({ onClose, selectedDate, onSuccess }) {
                 created_at: new Date().toISOString(),
             };
 
-            await reservasAPI.create(reservaData);
+            const result = await createReserva(reservaData);
 
-            if (onSuccess) onSuccess();
-            if (onClose) onClose();
+            if (result.success) {
+                if (onSuccess) onSuccess();
+                if (onClose) onClose();
+            } else {
+                setError(result.error);
+            }
         } catch (err) {
             console.error("Error al crear reserva:", err);
-            setError(
-                err.response?.data?.message || "Error al crear la reserva",
-            );
+            setError("Error al crear la reserva");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div
-            style={{
-                position: "fixed",
-                top: "50%",
-                left: "calc(50% - 625px)",
-                transform: "translateY(-50%)",
-                zIndex: 50,
-            }}
-            className="
-        bg-surface
-        shadow-lg
-        w-[375px]
-        h-[460px]
-        flex flex-col
-        p-4
-      "
-        >
-            <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-4 h-full"
-            >
-                {/* Material */}
-                <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1">
-                        Material (opcional)
-                    </label>
-                    {loadingData ? (
-                        <div className="text-sm text-text-secondary">
-                            Cargando...
-                        </div>
-                    ) : (
-                        <select
-                            name="material_id"
-                            value={formData.material_id}
-                            onChange={handleChange}
-                            disabled={loading}
-                            className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
-                        >
-                            <option value="">-- Seleccionar material --</option>
-                            {material.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.nombre} ({item.codigo})
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-
-                {/* Aulas */}
-                <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1">
-                        Aula (opcional)
-                    </label>
-                    {loadingData ? (
-                        <div className="text-sm text-text-secondary">
-                            Cargando...
-                        </div>
-                    ) : (
-                        <select
-                            name="aula_id"
-                            value={formData.aula_id}
-                            onChange={handleChange}
-                            disabled={loading}
-                            className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
-                        >
-                            <option value="">-- Seleccionar aula --</option>
-                            {aulas.map((aula) => (
-                                <option key={aula.id} value={aula.id}>
-                                    {aula.nombre} - {aula.tipo} (
-                                    {aula.capacidad} pers.)
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-
-                {/* Horario */}
-                <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1">
-                        Horario
-                    </label>
-                    <div className="flex gap-2">
-                        <input
-                            type="datetime-local"
-                            name="fecha_inicio"
-                            value={formData.fecha_inicio}
-                            onChange={(e) =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    fecha_inicio: e.target.value,
-                                }))
-                            }
-                            disabled={loading}
-                            className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
-                        />
-                        <input
-                            type="datetime-local"
-                            name="fecha_fin"
-                            value={formData.fecha_fin}
-                            onChange={(e) =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    fecha_fin: e.target.value,
-                                }))
-                            }
-                            disabled={loading}
-                            className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
-                        />
-                    </div>
-                </div>
-
-                {/* Observaciones */}
-                <div className="flex flex-col flex-1">
-                    <label className="block text-sm font-medium text-text-primary mb-1">
-                        Observaciones
-                    </label>
-                    <textarea
-                        name="observaciones"
-                        value={formData.observaciones}
-                        onChange={handleChange}
-                        disabled={loading}
-                        placeholder="Describe el motivo de la reserva..."
+        <div className="bg-surface">
+            {/* Botón volver */}
+            {onBack && (
+                <div className="border-b border-border p-4">
+                    <button
+                        type="button"
+                        onClick={onBack}
                         className="
+                            text-primary-500
+                            hover:text-primary-700
+                            font-medium
+                            text-sm
+                            flex items-center gap-1
+                        "
+                    >
+                        ← Volver al calendario
+                    </button>
+                </div>
+            )}
+
+            <div className="p-4">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    {/* Material */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-primary mb-1">
+                            Material (opcional)
+                        </label>
+                        {loadingData ? (
+                            <div className="text-sm text-text-secondary">
+                                Cargando...
+                            </div>
+                        ) : (
+                            <select
+                                name="material_id"
+                                value={formData.material_id}
+                                onChange={handleChange}
+                                disabled={loading}
+                                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
+                            >
+                                <option value="">
+                                    -- Seleccionar material --
+                                </option>
+                                {material
+                                    .filter((item) => item.disponible)
+                                    .map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.nombre} ({item.codigo})
+                                        </option>
+                                    ))}
+                            </select>
+                        )}
+                    </div>
+
+                    {/* Aulas */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-primary mb-1">
+                            Aula (opcional)
+                        </label>
+                        {loadingData ? (
+                            <div className="text-sm text-text-secondary">
+                                Cargando...
+                            </div>
+                        ) : (
+                            <select
+                                name="aula_id"
+                                value={formData.aula_id}
+                                onChange={handleChange}
+                                disabled={loading}
+                                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
+                            >
+                                <option value="">-- Seleccionar aula --</option>
+                                {aulas
+                                    .filter((aula) => aula.disponible)
+                                    .map((aula) => (
+                                        <option key={aula.id} value={aula.id}>
+                                            {aula.nombre} - {aula.tipo} (
+                                            {aula.capacidad} pers.)
+                                        </option>
+                                    ))}
+                            </select>
+                        )}
+                    </div>
+
+                    {/* Horario */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-primary mb-1">
+                            Horario
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="datetime-local"
+                                name="fecha_inicio"
+                                value={formData.fecha_inicio}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        fecha_inicio: e.target.value,
+                                    }))
+                                }
+                                disabled={loading}
+                                className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
+                            />
+                            <input
+                                type="datetime-local"
+                                name="fecha_fin"
+                                value={formData.fecha_fin}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        fecha_fin: e.target.value,
+                                    }))
+                                }
+                                disabled={loading}
+                                className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Observaciones */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-primary mb-1">
+                            Observaciones
+                        </label>
+                        <textarea
+                            name="observaciones"
+                            value={formData.observaciones}
+                            onChange={handleChange}
+                            disabled={loading}
+                            placeholder="Describe el motivo de la reserva..."
+                            rows={4}
+                            className="
               w-full
-              flex-1
               px-3
               py-2
               border border-border
@@ -253,18 +260,20 @@ export default function ReservationForm({ onClose, selectedDate, onSuccess }) {
               resize-none
               disabled:opacity-50
             "
-                    />
-                </div>
+                        />
+                    </div>
 
-                {/* Zona fija para errores */}
-                <div className="min-h-[20px]">
-                    {error && <p className="text-sm text-red-500">{error}</p>}
-                </div>
+                    {/* Zona fija para errores */}
+                    <div className="min-h-[20px]">
+                        {error && (
+                            <p className="text-sm text-red-500">{error}</p>
+                        )}
+                    </div>
 
-                <button
-                    type="submit"
-                    disabled={loading || loadingData}
-                    className="
+                    <button
+                        type="submit"
+                        disabled={loading || loadingData}
+                        className="
             w-full
             bg-primary-500
             hover:bg-primary-600
@@ -275,10 +284,11 @@ export default function ReservationForm({ onClose, selectedDate, onSuccess }) {
             disabled:opacity-50
             disabled:cursor-not-allowed
           "
-                >
-                    {loading ? "Creando reserva..." : "Enviar reserva"}
-                </button>
-            </form>
+                    >
+                        {loading ? "Creando reserva..." : "Enviar reserva"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
