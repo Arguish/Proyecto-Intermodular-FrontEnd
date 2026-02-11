@@ -41,7 +41,8 @@ export default function useReservationData() {
      */
     const getUserName = useCallback(
         (userId) => {
-            if (!userId) return null;
+            // Si no hay userId, es un invitado
+            if (!userId || userId === 0) return "Invitado";
             // Si es el usuario actual, retornarlo directamente
             if (currentUser && currentUser.id === userId) {
                 return currentUser.name;

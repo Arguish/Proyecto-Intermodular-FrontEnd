@@ -2,6 +2,10 @@ import useModalStore from "../store/ModalStore";
 import Modal from "./Modal";
 import ReservationDay from "../modals/ReservationDay";
 import ReservationForm from "../modals/ReservationForm";
+import AdminReservationForm from "../modals/AdminReservationForm";
+import MaterialForm from "../modals/MaterialForm";
+import AulaForm from "../modals/AulaForm";
+import UserForm from "../modals/UserForm";
 import { formatDateHeader } from "../utils/calendar";
 
 /**
@@ -24,6 +28,32 @@ const MODAL_CONFIG = {
         component: ReservationForm,
         getTitle: (props) =>
             props.reserva ? "Editar Reserva" : "Nueva Reserva",
+        height: "auto",
+        size: "md",
+    },
+    adminReservationForm: {
+        component: AdminReservationForm,
+        getTitle: (props) =>
+            props.reserva ? "Editar Reserva (Admin)" : "Nueva Reserva (Admin)",
+        height: "auto",
+        size: "lg",
+    },
+    materialForm: {
+        component: MaterialForm,
+        getTitle: (props) =>
+            props.material ? "Editar Material" : "Nuevo Material",
+        height: "auto",
+        size: "md",
+    },
+    aulaForm: {
+        component: AulaForm,
+        getTitle: (props) => (props.aula ? "Editar Aula" : "Nueva Aula"),
+        height: "auto",
+        size: "md",
+    },
+    userForm: {
+        component: UserForm,
+        getTitle: (props) => (props.user ? "Editar Usuario" : "Nuevo Usuario"),
         height: "auto",
         size: "md",
     },
