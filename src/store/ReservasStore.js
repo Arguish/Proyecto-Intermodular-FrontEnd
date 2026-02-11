@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { reservasAPI } from "../utils/api";
+import { reservasAPI } from "../lib/api";
 
 const useReservasStore = create(
     devtools(

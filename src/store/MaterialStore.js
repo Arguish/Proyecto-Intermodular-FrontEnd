@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { materialAPI } from "../utils/api";
+import { materialAPI } from "../lib/api";
 
 const useMaterialStore = create(
     devtools(
