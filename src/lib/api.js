@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_URL = {
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
     auth: {
         login: "/login",
         logout: "/logout",
@@ -17,6 +17,10 @@ const API_URL = {
         byId: (id) => `/material/${id}`,
         search: (query) => `/material/search?q=${query}`,
         byBarcode: (barcode) => `/material/barcode/${barcode}`,
+    },
+    aulas: {
+        base: "/aulas",
+        byId: (id) => `/aulas/${id}`,
     },
 };
 
@@ -87,6 +91,18 @@ export const materialAPI = {
     search: (query) => api.get(API_URL.material.search(query)),
 
     getByBarcode: (barcode) => api.get(API_URL.material.byBarcode(barcode)),
+};
+
+export const aulasAPI = {
+    getAll: () => api.get(API_URL.aulas.base),
+
+    getById: (id) => api.get(API_URL.aulas.byId(id)),
+
+    create: (data) => api.post(API_URL.aulas.base, data),
+
+    update: (id, data) => api.put(API_URL.aulas.byId(id), data),
+
+    delete: (id) => api.delete(API_URL.aulas.byId(id)),
 };
 
 export default api;

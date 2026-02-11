@@ -1,10 +1,14 @@
+import { useEffect } from "react";
 import AppRouter from "./router/AppRouter";
-import { AuthProvider } from "./store/AuthContext";
+import useAuthStore from "./store";
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <AppRouter />
-    </AuthProvider>
-  );
+    const { checkAuth } = useAuthStore();
+
+    useEffect(() => {
+        // Verificar autenticación al cargar la aplicación
+        checkAuth();
+    }, [checkAuth]);
+
+    return <AppRouter />;
 }
