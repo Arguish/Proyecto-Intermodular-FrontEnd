@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { aulasAPI } from "../utils/api";
+import { aulasAPI } from "../lib/api";
 
 const useAulasStore = create(
     devtools(
