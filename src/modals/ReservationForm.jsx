@@ -6,7 +6,7 @@ import useAulasStore from "../store/AulasStore";
 
 export default function ReservationForm({ onBack, date, onSuccess }) {
     const { user } = useAuthStore();
-    const { createReserva } = useReservasStore();
+    const { createReserva, reservas, fetchReservas } = useReservasStore();
     const {
         material,
         fetchMaterial,
@@ -60,6 +60,108 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
         }));
     };
 
+    /**
+     * Verifica si hay solapamiento entre dos rangos de fechas
+     */
+    const checkOverlap = (start1, end1, start2, end2) => {
+        return start1 < end2 && start2 < end1;
+    };
+
+    /**
+     * Valida si la nueva reserva solapa con reservas existentes
+     * Retorna objeto con isValid y mensaje de error
+     */
+    const validateOverlap = (newReserva) => {
+        const newStart = new Date(newReserva.fecha_inicio);
+        const newEnd = new Date(newReserva.fecha_fin);
+
+        // Filtrar reservas activas que podrían solapar
+        const conflictingReservas = reservas.filter((reserva) => {
+            if (reserva.estado !== "activa") return false;
+
+            const existingStart = new Date(reserva.fecha_inicio);
+            const existingEnd = new Date(reserva.fecha_fin);
+
+            // Verificar solapamiento de tiempo
+            if (!checkOverlap(newStart, newEnd, existingStart, existingEnd)) {
+                return false;
+            }
+
+            // Verificar solapamiento de material
+            if (
+                newReserva.material_id &&
+                reserva.material_id === newReserva.material_id
+            ) {
+                return true;
+            }
+
+            // Verificar solapamiento de aula
+            if (newReserva.aula_id && reserva.aula_id === newReserva.aula_id) {
+                return true;
+            }
+
+            return false;
+        });
+
+        if (conflictingReservas.length > 0) {
+            const conflict = conflictingReservas[0];
+            const startTime = new Date(conflict.fecha_inicio).toLocaleString(
+                "es-ES",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                },
+            );
+            const endTime = new Date(conflict.fecha_fin).toLocaleTimeString(
+                "es-ES",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                },
+            );
+
+            // Detectar qué recurso(s) está(n) en conflicto
+            const conflictingResources = [];
+
+            if (
+                newReserva.material_id &&
+                conflict.material_id &&
+                conflict.material_id === newReserva.material_id
+            ) {
+                conflictingResources.push("material");
+            }
+
+            if (
+                newReserva.aula_id &&
+                conflict.aula_id &&
+                conflict.aula_id === newReserva.aula_id
+            ) {
+                conflictingResources.push("aula");
+            }
+
+            // Generar mensaje según los recursos en conflicto
+            let resourceText = "";
+            if (conflictingResources.length === 2) {
+                resourceText = "la misma aula y el mismo material";
+            } else if (conflictingResources.includes("aula")) {
+                resourceText = "la misma aula";
+            } else if (conflictingResources.includes("material")) {
+                resourceText = "el mismo material";
+            } else {
+                resourceText = "el mismo recurso";
+            }
+
+            return {
+                isValid: false,
+                message: `Ya existe una reserva con ${resourceText} en ese horario (${startTime} - ${endTime}). Por favor, elige otro horario o recurso.`,
+            };
+        }
+
+        return { isValid: true };
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
@@ -87,6 +189,10 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
 
         setLoading(true);
         try {
+            // CRÍTICO: Recargar reservas desde servidor antes de validar
+            // Esto previene condiciones de carrera donde dos usuarios reservan simultáneamente
+            await fetchReservas(true);
+
             const reservaData = {
                 user_id: user.id,
                 ...(formData.material_id && {
@@ -102,11 +208,19 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
                 created_at: new Date().toISOString(),
             };
 
+            // Validar solapamiento con datos frescos del servidor
+            const validation = validateOverlap(reservaData);
+            if (!validation.isValid) {
+                setError(validation.message);
+                setLoading(false);
+                return;
+            }
+
+            // Crear la reserva en el servidor
             const result = await createReserva(reservaData);
 
             if (result.success) {
                 if (onSuccess) onSuccess();
-                if (onClose) onClose();
             } else {
                 setError(result.error);
             }
