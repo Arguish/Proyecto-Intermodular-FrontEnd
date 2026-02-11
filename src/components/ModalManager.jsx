@@ -22,7 +22,8 @@ const MODAL_CONFIG = {
     },
     reservationForm: {
         component: ReservationForm,
-        getTitle: () => "Nueva Reserva",
+        getTitle: (props) =>
+            props.reserva ? "Editar Reserva" : "Nueva Reserva",
         height: "auto",
         size: "md",
     },

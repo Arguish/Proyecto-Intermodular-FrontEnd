@@ -4,9 +4,10 @@ import useReservasStore from "../store/ReservasStore";
 import useMaterialStore from "../store/MaterialStore";
 import useAulasStore from "../store/AulasStore";
 
-export default function ReservationForm({ onBack, date, onSuccess }) {
+export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
     const { user } = useAuthStore();
-    const { createReserva, reservas, fetchReservas } = useReservasStore();
+    const { createReserva, updateReserva, reservas, fetchReservas } =
+        useReservasStore();
     const {
         material,
         fetchMaterial,
@@ -14,7 +15,8 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
     } = useMaterialStore();
     const { aulas, fetchAulas, isLoading: loadingAulas } = useAulasStore();
 
-    // Compatibilidad: date o selectedDate
+    // Modo edición si se proporciona una reserva existente
+    const isEditMode = !!reserva;
     const selectedDate = date;
 
     const [formData, setFormData] = useState({
@@ -35,6 +37,22 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
         fetchMaterial();
         fetchAulas();
     }, [fetchMaterial, fetchAulas]);
+
+    // Pre-rellenar formulario si estamos editando
+    useEffect(() => {
+        if (reserva) {
+            const startDate = new Date(reserva.fecha_inicio);
+            const endDate = new Date(reserva.fecha_fin);
+
+            setFormData({
+                material_id: reserva.material_id?.toString() || "",
+                aula_id: reserva.aula_id?.toString() || "",
+                fecha_inicio: startDate.toISOString().slice(0, 16),
+                fecha_fin: endDate.toISOString().slice(0, 16),
+                observaciones: reserva.observaciones || "",
+            });
+        }
+    }, [reserva]);
 
     // Formatear fecha seleccionada para los inputs
     useEffect(() => {
@@ -76,11 +94,14 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
         const newEnd = new Date(newReserva.fecha_fin);
 
         // Filtrar reservas activas que podrían solapar
-        const conflictingReservas = reservas.filter((reserva) => {
-            if (reserva.estado !== "activa") return false;
+        const conflictingReservas = reservas.filter((r) => {
+            if (r.estado !== "activa") return false;
 
-            const existingStart = new Date(reserva.fecha_inicio);
-            const existingEnd = new Date(reserva.fecha_fin);
+            // Excluir la reserva actual si estamos editando
+            if (reserva && r.id === reserva.id) return false;
+
+            const existingStart = new Date(r.fecha_inicio);
+            const existingEnd = new Date(r.fecha_fin);
 
             // Verificar solapamiento de tiempo
             if (!checkOverlap(newStart, newEnd, existingStart, existingEnd)) {
@@ -90,13 +111,13 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
             // Verificar solapamiento de material
             if (
                 newReserva.material_id &&
-                reserva.material_id === newReserva.material_id
+                r.material_id === newReserva.material_id
             ) {
                 return true;
             }
 
             // Verificar solapamiento de aula
-            if (newReserva.aula_id && reserva.aula_id === newReserva.aula_id) {
+            if (newReserva.aula_id && r.aula_id === newReserva.aula_id) {
                 return true;
             }
 
@@ -216,8 +237,10 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
                 return;
             }
 
-            // Crear la reserva en el servidor
-            const result = await createReserva(reservaData);
+            // Crear o actualizar la reserva en el servidor
+            const result = isEditMode
+                ? await updateReserva(reserva.id, reservaData)
+                : await createReserva(reservaData);
 
             if (result.success) {
                 if (onSuccess) onSuccess();
@@ -399,7 +422,13 @@ export default function ReservationForm({ onBack, date, onSuccess }) {
             disabled:cursor-not-allowed
           "
                     >
-                        {loading ? "Creando reserva..." : "Enviar reserva"}
+                        {loading
+                            ? isEditMode
+                                ? "Guardando cambios..."
+                                : "Creando reserva..."
+                            : isEditMode
+                              ? "Guardar cambios"
+                              : "Enviar reserva"}
                     </button>
                 </form>
             </div>
