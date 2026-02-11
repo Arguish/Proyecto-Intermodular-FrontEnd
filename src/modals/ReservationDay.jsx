@@ -8,7 +8,7 @@ import useReservationData from "../hooks/useReservationData";
 import {
     getDayReservations,
     generateTimeSlots,
-    getReservationAtTime,
+    getReservationsAtTime,
 } from "../utils/calendar";
 
 /**
@@ -27,7 +27,7 @@ export default function ReservationDay({
     const { replaceModal } = useModalStore();
 
     // Hook personalizado para manejar datos de reservas
-    const { getReservationLabel } = useReservationData();
+    const { getReservationInfo } = useReservationData();
 
     // Cargar datos desde stores
     useEffect(() => {
@@ -90,7 +90,7 @@ export default function ReservationDay({
             {/* Franjas horarias - SCROLLABLE */}
             <div className="p-4">
                 {timeSlots.map((time, index) => {
-                    const reservation = getReservationAtTime(
+                    const reservations = getReservationsAtTime(
                         time,
                         dayReservations,
                     );
@@ -98,8 +98,8 @@ export default function ReservationDay({
                         <TimeSlotItem
                             key={index}
                             time={time}
-                            reservation={reservation}
-                            getReservationLabel={getReservationLabel}
+                            reservations={reservations}
+                            getReservationInfo={getReservationInfo}
                         />
                     );
                 })}

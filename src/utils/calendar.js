@@ -144,14 +144,14 @@ export function generateTimeSlots(startHour = 8, endHour = 24) {
 }
 
 /**
- * Busca si hay una reserva activa en una franja horaria específica
+ * Busca todas las reservas activas en una franja horaria específica
  * @param {string} time - Hora en formato "HH:00"
  * @param {Array} dayReservations - Reservas del día
- * @returns {Object|undefined} La reserva encontrada o undefined
+ * @returns {Array} Array de reservas encontradas
  */
-export function getReservationAtTime(time, dayReservations) {
+export function getReservationsAtTime(time, dayReservations) {
     const [hour] = time.split(":");
-    return dayReservations.find((reserva) => {
+    return dayReservations.filter((reserva) => {
         const inicio = new Date(reserva.fecha_inicio);
         const fin = new Date(reserva.fecha_fin);
         const timeHour = parseInt(hour);
