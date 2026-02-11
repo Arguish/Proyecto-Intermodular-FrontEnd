@@ -1,8 +1,12 @@
 import { Navigate } from "react-router-dom";
 import useAuthStore from "../store/AuthStore";
 
-export default function ProtectedRoute({ children, redirectTo = "/login" }) {
-    const { isAuthenticated, isLoading } = useAuthStore();
+export default function ProtectedRoute({
+    children,
+    redirectTo = "/login",
+    allowedRoles = null,
+}) {
+    const { isAuthenticated, isLoading, user } = useAuthStore();
 
     if (isLoading) {
         return (
@@ -14,5 +18,14 @@ export default function ProtectedRoute({ children, redirectTo = "/login" }) {
         );
     }
 
-    return isAuthenticated ? children : <Navigate to={redirectTo} replace />;
+    if (!isAuthenticated) {
+        return <Navigate to={redirectTo} replace />;
+    }
+
+    // Si hay roles permitidos, verificar que el usuario tenga uno de ellos
+    if (allowedRoles && !allowedRoles.includes(user?.role)) {
+        return <Navigate to="/" replace />;
+    }
+
+    return children;
 }
