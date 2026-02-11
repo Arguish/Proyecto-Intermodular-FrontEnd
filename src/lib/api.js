@@ -1,8 +1,28 @@
 import axios from "axios";
 
+const API_URL = {
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+    auth: {
+        login: "/login",
+        logout: "/logout",
+        me: "/user",
+    },
+    reservas: {
+        base: "/reservas",
+        byId: (id) => `/reservas/${id}`,
+        devolver: (id) => `/reservas/${id}/devolver`,
+    },
+    material: {
+        base: "/material",
+        byId: (id) => `/material/${id}`,
+        search: (query) => `/material/search?q=${query}`,
+        byBarcode: (barcode) => `/material/barcode/${barcode}`,
+    },
+};
+
 // Configuración base de Axios para la API de Laravel
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+    baseURL: API_URL.baseURL,
     headers: {
         "Content-Type": "application/json",
     },
@@ -37,35 +57,36 @@ api.interceptors.response.use(
 
 // Funciones de API
 export const authAPI = {
-    login: (email, password) => api.post("/login", { email, password }),
+    login: (email, password) =>
+        api.post(API_URL.auth.login, { email, password }),
 
-    logout: () => api.post("/logout"),
+    logout: () => api.post(API_URL.auth.logout),
 
-    me: () => api.get("/user"),
+    me: () => api.get(API_URL.auth.me),
 };
 
 export const reservasAPI = {
-    getAll: () => api.get("/reservas"),
+    getAll: () => api.get(API_URL.reservas.base),
 
-    getById: (id) => api.get(`/reservas/${id}`),
+    getById: (id) => api.get(API_URL.reservas.byId(id)),
 
-    create: (data) => api.post("/reservas", data),
+    create: (data) => api.post(API_URL.reservas.base, data),
 
-    update: (id, data) => api.put(`/reservas/${id}`, data),
+    update: (id, data) => api.put(API_URL.reservas.byId(id), data),
 
-    delete: (id) => api.delete(`/reservas/${id}`),
+    delete: (id) => api.delete(API_URL.reservas.byId(id)),
 
-    devolver: (id) => api.post(`/reservas/${id}/devolver`),
+    devolver: (id) => api.post(API_URL.reservas.devolver(id)),
 };
 
 export const materialAPI = {
-    getAll: () => api.get("/material"),
+    getAll: () => api.get(API_URL.material.base),
 
-    getById: (id) => api.get(`/material/${id}`),
+    getById: (id) => api.get(API_URL.material.byId(id)),
 
-    search: (query) => api.get(`/material/search?q=${query}`),
+    search: (query) => api.get(API_URL.material.search(query)),
 
-    getByBarcode: (barcode) => api.get(`/material/barcode/${barcode}`),
+    getByBarcode: (barcode) => api.get(API_URL.material.byBarcode(barcode)),
 };
 
 export default api;
