@@ -117,7 +117,8 @@ JsonServer/              # Mock API Backend
 
 .Docs/                   # Documentación
 ├── JSON-Server-Setup.md       # Guía completa del servidor mock
-└── Zustand-Store-Guide.md     # Arquitectura de gestión de estado
+├── Zustand-Store-Guide.md     # Arquitectura de gestión de estado
+└── GuiaBackend.md             # Especificación de API para backend real
 ```
 
 ## 🚀 Instalación y Uso
@@ -174,6 +175,7 @@ npm run dev
 
 - **[JSON Server Setup](.Docs/JSON-Server-Setup.md)** - Guía completa del mock API backend
 - **[Zustand Store Guide](.Docs/Zustand-Store-Guide.md)** - Arquitectura de gestión de estado
+- **[Guía Backend API](.Docs/GuiaBackend.md)** - Especificación completa de endpoints para integración backend
 
 ## 🔧 Scripts Disponibles
 
