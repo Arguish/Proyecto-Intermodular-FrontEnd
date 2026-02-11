@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 
 export default function ProtectedRoute({ children, redirectTo = "/login" }) {
     const { isAuthenticated, isLoading } = useAuthStore();

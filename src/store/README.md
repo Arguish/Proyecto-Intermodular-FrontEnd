@@ -15,7 +15,7 @@ El store de autenticación maneja:
 ### Importar el store
 
 ```javascript
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 ```
 
 ### Acceder al estado y acciones
@@ -124,7 +124,7 @@ const {
 
 ```javascript
 import { useState } from "react";
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -159,7 +159,7 @@ function Login() {
 
 ```javascript
 import { Navigate } from "react-router-dom";
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 
 function ProtectedRoute({ children }) {
     const { isAuthenticated, isLoading } = useAuthStore();
@@ -175,7 +175,7 @@ function ProtectedRoute({ children }) {
 ### Header con información del usuario
 
 ```javascript
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 
 function Header() {
     const { user, logout } = useAuthStore();
@@ -193,7 +193,7 @@ function Header() {
 
 ```javascript
 import { useEffect } from "react";
-import useAuthStore from "../store";
+import useAuthStore from "../store/AuthStore";
 
 function App() {
     const { checkAuth, isLoading } = useAuthStore();

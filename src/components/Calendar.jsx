@@ -1,113 +1,47 @@
 import { useState, useEffect } from "react";
-import DayPopup from "../modals/DayPopup";
-import { reservasAPI } from "../lib/api";
-
-const weekDays = ["L", "M", "X", "J", "V", "S", "D"];
-const monthNames = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-];
+import useReservasStore from "../store/ReservasStore";
+import useModalStore from "../store/ModalStore";
+import {
+    DAYS,
+    MONTHS,
+    generateCalendarCells,
+    hasDayReservations,
+    getPreviousMonth,
+    getNextMonth,
+} from "../utils/calendar";
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [reservas, setReservas] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    // Cargar reservas
-    const fetchReservas = async () => {
-        try {
-            const response = await reservasAPI.getAll();
-            setReservas(response.data);
-        } catch (err) {
-            console.error("Error al cargar reservas:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Stores
+    const { reservas, isLoading, fetchReservas, refresh } = useReservasStore();
+    const { openModal } = useModalStore();
 
     useEffect(() => {
         fetchReservas();
-    }, []);
+    }, [fetchReservas]);
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    // Día 1 del mes
-    const firstDayOfMonth = new Date(year, month, 1);
-
-    // Convertimos domingo (0) a domingo (6)
-    const startDay = (firstDayOfMonth.getDay() + 6) % 7;
-
-    // Días del mes actual
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    // Días del mes anterior
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-    const cells = [];
-
-    // Días del mes anterior (gris)
-    for (let i = startDay - 1; i >= 0; i--) {
-        cells.push({
-            day: daysInPrevMonth - i,
-            currentMonth: false,
-        });
-    }
-
-    // Días del mes actual
-    for (let i = 1; i <= daysInMonth; i++) {
-        cells.push({
-            day: i,
-            currentMonth: true,
-        });
-    }
-
-    // Días del mes siguiente (gris)
-    while (cells.length < 42) {
-        cells.push({
-            day: cells.length - (startDay + daysInMonth) + 1,
-            currentMonth: false,
-        });
-    }
+    const cells = generateCalendarCells(year, month);
 
     const goToPrevMonth = () => {
-        setCurrentDate(new Date(year, month - 1, 1));
+        setCurrentDate(getPreviousMonth(currentDate));
     };
 
     const goToNextMonth = () => {
-        setCurrentDate(new Date(year, month + 1, 1));
+        setCurrentDate(getNextMonth(currentDate));
     };
 
     const handleDayClick = (cell) => {
         if (cell.currentMonth) {
             const clickedDate = new Date(year, month, cell.day);
-            setSelectedDate(clickedDate);
+            openModal("reservationDay", {
+                date: clickedDate,
+                onReservationCreated: refresh,
+            });
         }
-    };
-
-    // Verificar si un día tiene reservas
-    const hasReservations = (day) => {
-        const dateToCheck = new Date(year, month, day);
-        return reservas.some((reserva) => {
-            const reservaDate = new Date(reserva.fecha_inicio);
-            return (
-                reservaDate.getDate() === dateToCheck.getDate() &&
-                reservaDate.getMonth() === dateToCheck.getMonth() &&
-                reservaDate.getFullYear() === dateToCheck.getFullYear() &&
-                reserva.estado === "activa"
-            );
-        });
     };
 
     return (
@@ -129,7 +63,7 @@ export default function Calendar() {
                 </button>
 
                 <span className="font-medium">
-                    {monthNames[month]} {year}
+                    {MONTHS.long[month]} {year}
                 </span>
 
                 <button
@@ -150,7 +84,7 @@ export default function Calendar() {
         border-b border-border
       "
             >
-                {weekDays.map((day) => (
+                {DAYS.short.map((day) => (
                     <div key={day} className="py-1">
                         {day}
                     </div>
@@ -176,22 +110,18 @@ export default function Calendar() {
             `}
                     >
                         {cell.day}
-                        {cell.currentMonth && hasReservations(cell.day) && (
-                            <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-500 rounded-full"></div>
-                        )}
+                        {cell.currentMonth &&
+                            hasDayReservations(
+                                cell.day,
+                                month,
+                                year,
+                                reservas,
+                            ) && (
+                                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-500 rounded-full"></div>
+                            )}
                     </div>
                 ))}
             </div>
-
-            {/* Pop-up de día seleccionado */}
-            {selectedDate && (
-                <DayPopup
-                    date={selectedDate}
-                    reservas={reservas}
-                    onClose={() => setSelectedDate(null)}
-                    onReservationCreated={fetchReservas}
-                />
-            )}
         </div>
     );
 }

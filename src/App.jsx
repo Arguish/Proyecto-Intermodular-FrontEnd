@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import AppRouter from "./router/AppRouter";
-import useAuthStore from "./store";
+import ModalManager from "./components/ModalManager";
+import useAuthStore from "./store/AuthStore";
 
 export default function App() {
     const { checkAuth } = useAuthStore();
@@ -10,5 +11,10 @@ export default function App() {
         checkAuth();
     }, [checkAuth]);
 
-    return <AppRouter />;
+    return (
+        <>
+            <AppRouter />
+            <ModalManager />
+        </>
+    );
 }
