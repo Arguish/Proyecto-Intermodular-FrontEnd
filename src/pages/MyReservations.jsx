@@ -15,9 +15,10 @@ export default function MyReservations() {
     }, [fetchReservas]);
 
     // Filtrar solo las reservas del usuario actual
+    // Backend retorna reservas con objeto user anidado
     const myReservations = reservas.filter(
         (reserva) =>
-            reserva.user_id === user?.id && reserva.estado === "activa",
+            reserva.user?.id === user?.id && reserva.estado === "activa",
     );
 
     // Agrupar reservas por día

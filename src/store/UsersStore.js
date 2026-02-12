@@ -27,8 +27,10 @@ const useUsersStore = create(
                 set({ isLoading: true, error: null });
                 try {
                     const response = await usersAPI.getAll();
+                    // Backend retorna { data: [ users ] }
+                    const usersData = response.data.data || response.data;
                     set({
-                        users: response.data,
+                        users: usersData,
                         isLoading: false,
                         lastFetch: Date.now(),
                     });

@@ -72,8 +72,10 @@ const useAuthStore = create(
                     set({ isLoading: true });
                     try {
                         const response = await authAPI.me();
+                        // Backend retorna { data: { user } }
+                        const userData = response.data.data || response.data;
                         set({
-                            user: response.data,
+                            user: userData,
                             token,
                             isAuthenticated: true,
                             isLoading: false,

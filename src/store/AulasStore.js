@@ -27,8 +27,10 @@ const useAulasStore = create(
                 set({ isLoading: true, error: null });
                 try {
                     const response = await aulasAPI.getAll();
+                    // Backend retorna { data: [ aulas ] }
+                    const aulasData = response.data.data || response.data;
                     set({
-                        aulas: response.data,
+                        aulas: aulasData,
                         isLoading: false,
                         lastFetch: Date.now(),
                     });

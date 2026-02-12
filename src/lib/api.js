@@ -84,6 +84,8 @@ export const reservasAPI = {
 
     delete: (id) => api.delete(API_URL.reservas.byId(id)),
 
+    cancel: (id) => api.post(`/reservas/${id}/cancel`),
+
     devolver: (id) => api.post(API_URL.reservas.devolver(id)),
 };
 

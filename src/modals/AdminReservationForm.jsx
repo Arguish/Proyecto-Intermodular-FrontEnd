@@ -4,6 +4,7 @@ import useReservasStore from "../store/ReservasStore";
 import useMaterialStore from "../store/MaterialStore";
 import useAulasStore from "../store/AulasStore";
 import useUsersStore from "../store/UsersStore";
+import { formatDateForBackend } from "../utils/dateFormat";
 
 export default function AdminReservationForm({ reserva, date, onSuccess }) {
     const { user: currentUser } = useAuthStore();
@@ -19,8 +20,8 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
 
     const [formData, setFormData] = useState({
         user_id: "",
-        material_id: "",
-        aula_id: "",
+        material_ids: [], // Array de IDs de materiales
+        room_id: "", // ID del aula (room)
         fecha_inicio: "",
         fecha_fin: "",
         observaciones: "",
@@ -46,15 +47,22 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
             const startDate = new Date(reserva.fecha_inicio);
             const endDate = new Date(reserva.fecha_fin);
 
+            // El backend retorna objetos anidados
+            const materialIds = reserva.materials
+                ? reserva.materials.map((m) => m.id)
+                : [];
+            const roomId = reserva.room ? reserva.room.id.toString() : "";
+            const userId = reserva.user ? reserva.user.id.toString() : "";
+
             setFormData({
-                user_id: reserva.user_id?.toString() || "",
-                material_id: reserva.material_id?.toString() || "",
-                aula_id: reserva.aula_id?.toString() || "",
+                user_id: userId,
+                material_ids: materialIds,
+                room_id: roomId,
                 fecha_inicio: startDate.toISOString().slice(0, 16),
                 fecha_fin: endDate.toISOString().slice(0, 16),
                 observaciones: reserva.observaciones || "",
                 estado: reserva.estado || "activa",
-                es_invitado: reserva.user_id === null || reserva.user_id === 0,
+                es_invitado: !reserva.user,
             });
         }
     }, [reserva]);
@@ -109,15 +117,17 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
                 return false;
             }
 
-            if (
-                newReserva.material_id &&
-                r.material_id === newReserva.material_id
-            ) {
-                return true;
+            // Backend retorna materials como array y room como objeto
+            if (newReserva.material_ids && r.materials) {
+                const rMaterialIds = r.materials.map((m) => m.id);
+                const hasOverlap = newReserva.material_ids.some((id) =>
+                    rMaterialIds.includes(id),
+                );
+                if (hasOverlap) return true;
             }
 
-            if (newReserva.aula_id && r.aula_id === newReserva.aula_id) {
-                return true;
+            if (newReserva.room_id && r.room) {
+                if (r.room.id === newReserva.room_id) return true;
             }
 
             return false;
@@ -144,18 +154,18 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
 
             const conflictingResources = [];
 
-            if (
-                newReserva.material_id &&
-                conflict.material_id &&
-                conflict.material_id === newReserva.material_id
-            ) {
-                conflictingResources.push("material");
+            if (conflict.materials && newReserva.material_ids) {
+                const conflictMaterialIds = conflict.materials.map((m) => m.id);
+                const hasConflict = newReserva.material_ids.some((id) =>
+                    conflictMaterialIds.includes(id),
+                );
+                if (hasConflict) conflictingResources.push("material");
             }
 
             if (
-                newReserva.aula_id &&
-                conflict.aula_id &&
-                conflict.aula_id === newReserva.aula_id
+                conflict.room &&
+                newReserva.room_id &&
+                conflict.room.id === newReserva.room_id
             ) {
                 conflictingResources.push("aula");
             }
@@ -185,7 +195,7 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
         setError("");
 
         // Validaciones
-        if (!formData.material_id && !formData.aula_id) {
+        if (formData.material_ids.length === 0 && !formData.room_id) {
             setError("Debes seleccionar al menos un material o un aula.");
             return;
         }
@@ -218,14 +228,16 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
                 user_id: formData.es_invitado
                     ? null
                     : parseInt(formData.user_id),
-                ...(formData.material_id && {
-                    material_id: parseInt(formData.material_id),
+                ...(formData.room_id && {
+                    room_id: parseInt(formData.room_id),
                 }),
-                ...(formData.aula_id && {
-                    aula_id: parseInt(formData.aula_id),
+                ...(formData.material_ids.length > 0 && {
+                    material_ids: formData.material_ids.map((id) =>
+                        parseInt(id),
+                    ),
                 }),
-                fecha_inicio: new Date(formData.fecha_inicio).toISOString(),
-                fecha_fin: new Date(formData.fecha_fin).toISOString(),
+                fecha_inicio: formatDateForBackend(formData.fecha_inicio),
+                fecha_fin: formatDateForBackend(formData.fecha_fin),
                 estado: formData.estado,
                 observaciones: formData.observaciones,
             };
@@ -333,10 +345,11 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
                     </select>
                 </div>
 
-                {/* Material */}
+                {/* Material (múltiple selección) */}
                 <div>
                     <label className="block text-sm font-medium text-text-primary mb-1">
-                        Material (opcional)
+                        Material (opcional - mantén Ctrl/Cmd para seleccionar
+                        varios)
                     </label>
                     {loadingData ? (
                         <div className="text-sm text-text-secondary">
@@ -344,13 +357,23 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
                         </div>
                     ) : (
                         <select
-                            name="material_id"
-                            value={formData.material_id}
-                            onChange={handleChange}
+                            name="material_ids"
+                            value={formData.material_ids}
+                            onChange={(e) => {
+                                const selectedOptions = Array.from(
+                                    e.target.selectedOptions,
+                                    (option) => parseInt(option.value),
+                                );
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    material_ids: selectedOptions,
+                                }));
+                            }}
                             disabled={loading}
+                            multiple
+                            size={5}
                             className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
                         >
-                            <option value="">-- Seleccionar material --</option>
                             {material
                                 .filter((item) => item.disponible)
                                 .map((item) => (
@@ -359,6 +382,12 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
                                     </option>
                                 ))}
                         </select>
+                    )}
+                    {formData.material_ids.length > 0 && (
+                        <p className="text-xs text-text-secondary mt-1">
+                            {formData.material_ids.length} material(es)
+                            seleccionado(s)
+                        </p>
                     )}
                 </div>
 
@@ -373,8 +402,8 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
                         </div>
                     ) : (
                         <select
-                            name="aula_id"
-                            value={formData.aula_id}
+                            name="room_id"
+                            value={formData.room_id}
                             onChange={handleChange}
                             disabled={loading}
                             className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
