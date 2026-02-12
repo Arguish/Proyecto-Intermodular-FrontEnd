@@ -1,57 +1,36 @@
 import { useCallback } from "react";
-import useMaterialStore from "../store/MaterialStore";
-import useAulasStore from "../store/AulasStore";
-import useAuthStore from "../store/AuthStore";
 
 /**
  * Hook personalizado para obtener información de reservas
- * Proporciona funciones para obtener nombres de materiales, aulas, usuarios y etiquetas de reservas
+ * Adaptado para trabajar con objetos anidados del backend Laravel
+ * El backend retorna: { user: {...}, room: {...}, materials: [...] }
  */
 export default function useReservationData() {
-    const { getMaterialById } = useMaterialStore();
-    const { getAulaById } = useAulasStore();
-    const { user: currentUser } = useAuthStore();
+    /**
+     * Obtiene el nombre del material desde el objeto anidado
+     */
+    const getMaterialName = useCallback((reservation) => {
+        if (!reservation.materials || reservation.materials.length === 0)
+            return null;
+        // Si hay múltiples materiales, unirlos con comas
+        return reservation.materials.map((m) => m.nombre).join(", ");
+    }, []);
 
     /**
-     * Obtiene el nombre del material por su ID
+     * Obtiene el nombre del aula/room desde el objeto anidado
      */
-    const getMaterialName = useCallback(
-        (materialId) => {
-            if (!materialId) return null;
-            const item = getMaterialById(materialId);
-            return item ? item.nombre : "Material no encontrado";
-        },
-        [getMaterialById],
-    );
+    const getRoomName = useCallback((reservation) => {
+        if (!reservation.room) return null;
+        return reservation.room.nombre;
+    }, []);
 
     /**
-     * Obtiene el nombre del aula por su ID
+     * Obtiene el nombre del usuario desde el objeto anidado
      */
-    const getAulaName = useCallback(
-        (aulaId) => {
-            if (!aulaId) return null;
-            const aula = getAulaById(aulaId);
-            return aula ? aula.nombre : "Aula no encontrada";
-        },
-        [getAulaById],
-    );
-
-    /**
-     * Obtiene el nombre del usuario por su ID
-     */
-    const getUserName = useCallback(
-        (userId) => {
-            // Si no hay userId, es un invitado
-            if (!userId || userId === 0) return "Invitado";
-            // Si es el usuario actual, retornarlo directamente
-            if (currentUser && currentUser.id === userId) {
-                return currentUser.name;
-            }
-            // Para otros usuarios, retornar placeholder (en producción harías fetch)
-            return `Usuario #${userId}`;
-        },
-        [currentUser],
-    );
+    const getUserName = useCallback((reservation) => {
+        if (!reservation.user) return "Usuario desconocido";
+        return reservation.user.name;
+    }, []);
 
     /**
      * Obtiene la etiqueta descriptiva de una reserva
@@ -60,17 +39,13 @@ export default function useReservationData() {
     const getReservationLabel = useCallback(
         (reservation) => {
             const parts = [];
-            if (reservation.material_id) {
-                const materialName = getMaterialName(reservation.material_id);
-                if (materialName) parts.push(materialName);
-            }
-            if (reservation.aula_id) {
-                const aulaName = getAulaName(reservation.aula_id);
-                if (aulaName) parts.push(aulaName);
-            }
+            const materialName = getMaterialName(reservation);
+            if (materialName) parts.push(materialName);
+            const roomName = getRoomName(reservation);
+            if (roomName) parts.push(roomName);
             return parts.length > 0 ? parts.join(" + ") : "Reserva";
         },
-        [getMaterialName, getAulaName],
+        [getMaterialName, getRoomName],
     );
 
     /**
@@ -79,25 +54,25 @@ export default function useReservationData() {
      */
     const getReservationInfo = useCallback(
         (reservation) => {
-            const userName = getUserName(reservation.user_id);
-            const aulaName = getAulaName(reservation.aula_id);
-            const materialName = getMaterialName(reservation.material_id);
+            const userName = getUserName(reservation);
+            const roomName = getRoomName(reservation);
+            const materialName = getMaterialName(reservation);
 
             return {
                 // Línea 1: Usuario + Aula
-                line1: [userName, aulaName].filter(Boolean).join(" - "),
+                line1: [userName, roomName].filter(Boolean).join(" - "),
                 // Línea 2: Material (si existe)
                 line2: materialName || null,
                 // Línea 3: Observaciones (motivo)
                 line3: reservation.observaciones || "Sin motivo especificado",
             };
         },
-        [getUserName, getAulaName, getMaterialName],
+        [getUserName, getRoomName, getMaterialName],
     );
 
     return {
         getMaterialName,
-        getAulaName,
+        getRoomName,
         getUserName,
         getReservationLabel,
         getReservationInfo,

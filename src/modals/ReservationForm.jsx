@@ -3,6 +3,7 @@ import useAuthStore from "../store/AuthStore";
 import useReservasStore from "../store/ReservasStore";
 import useMaterialStore from "../store/MaterialStore";
 import useAulasStore from "../store/AulasStore";
+import { formatDateForBackend } from "../utils/dateFormat";
 
 export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
     const { user } = useAuthStore();
@@ -20,8 +21,8 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
     const selectedDate = date;
 
     const [formData, setFormData] = useState({
-        material_id: "",
-        aula_id: "",
+        material_ids: [], // Array de IDs de materiales
+        room_id: "", // ID del aula (room)
         fecha_inicio: "",
         fecha_fin: "",
         observaciones: "",
@@ -44,9 +45,16 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
             const startDate = new Date(reserva.fecha_inicio);
             const endDate = new Date(reserva.fecha_fin);
 
+            // El backend retorna objetos anidados
+            // materials es un array de objetos, room es un objeto
+            const materialIds = reserva.materials
+                ? reserva.materials.map((m) => m.id)
+                : [];
+            const roomId = reserva.room ? reserva.room.id.toString() : "";
+
             setFormData({
-                material_id: reserva.material_id?.toString() || "",
-                aula_id: reserva.aula_id?.toString() || "",
+                material_ids: materialIds,
+                room_id: roomId,
                 fecha_inicio: startDate.toISOString().slice(0, 16),
                 fecha_fin: endDate.toISOString().slice(0, 16),
                 observaciones: reserva.observaciones || "",
@@ -88,6 +96,7 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
     /**
      * Valida si la nueva reserva solapa con reservas existentes
      * Retorna objeto con isValid y mensaje de error
+     * Adaptado para trabajar con objetos anidados del backend
      */
     const validateOverlap = (newReserva) => {
         const newStart = new Date(newReserva.fecha_inicio);
@@ -108,17 +117,19 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
                 return false;
             }
 
-            // Verificar solapamiento de material
-            if (
-                newReserva.material_id &&
-                r.material_id === newReserva.material_id
-            ) {
-                return true;
+            // Backend retorna materials como array de objetos y room como objeto
+            // Verificar solapamiento de materiales
+            if (newReserva.material_ids && r.materials) {
+                const rMaterialIds = r.materials.map((m) => m.id);
+                const hasOverlap = newReserva.material_ids.some((id) =>
+                    rMaterialIds.includes(id),
+                );
+                if (hasOverlap) return true;
             }
 
-            // Verificar solapamiento de aula
-            if (newReserva.aula_id && r.aula_id === newReserva.aula_id) {
-                return true;
+            // Verificar solapamiento de aula/room
+            if (newReserva.room_id && r.room) {
+                if (r.room.id === newReserva.room_id) return true;
             }
 
             return false;
@@ -146,18 +157,20 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
             // Detectar qué recurso(s) está(n) en conflicto
             const conflictingResources = [];
 
-            if (
-                newReserva.material_id &&
-                conflict.material_id &&
-                conflict.material_id === newReserva.material_id
-            ) {
-                conflictingResources.push("material");
+            // Verificar materiales en conflicto
+            if (conflict.materials && newReserva.material_ids) {
+                const conflictMaterialIds = conflict.materials.map((m) => m.id);
+                const hasConflict = newReserva.material_ids.some((id) =>
+                    conflictMaterialIds.includes(id),
+                );
+                if (hasConflict) conflictingResources.push("material");
             }
 
+            // Verificar aula en conflicto
             if (
-                newReserva.aula_id &&
-                conflict.aula_id &&
-                conflict.aula_id === newReserva.aula_id
+                conflict.room &&
+                newReserva.room_id &&
+                conflict.room.id === newReserva.room_id
             ) {
                 conflictingResources.push("aula");
             }
@@ -188,7 +201,7 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
         setError("");
 
         // Validaciones - al menos uno debe estar seleccionado
-        if (!formData.material_id && !formData.aula_id) {
+        if (formData.material_ids.length === 0 && !formData.room_id) {
             setError("Debes seleccionar al menos un material o un aula.");
             return;
         }
@@ -214,19 +227,20 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
             // Esto previene condiciones de carrera donde dos usuarios reservan simultáneamente
             await fetchReservas(true);
 
+            // Formato correcto para el backend Laravel
             const reservaData = {
                 user_id: user.id,
-                ...(formData.material_id && {
-                    material_id: parseInt(formData.material_id),
+                ...(formData.room_id && {
+                    room_id: parseInt(formData.room_id),
                 }),
-                ...(formData.aula_id && {
-                    aula_id: parseInt(formData.aula_id),
+                ...(formData.material_ids.length > 0 && {
+                    material_ids: formData.material_ids.map((id) =>
+                        parseInt(id),
+                    ),
                 }),
-                fecha_inicio: new Date(formData.fecha_inicio).toISOString(),
-                fecha_fin: new Date(formData.fecha_fin).toISOString(),
-                estado: "activa",
+                fecha_inicio: formatDateForBackend(formData.fecha_inicio),
+                fecha_fin: formatDateForBackend(formData.fecha_fin),
                 observaciones: formData.observaciones,
-                created_at: new Date().toISOString(),
             };
 
             // Validar solapamiento con datos frescos del servidor
@@ -278,10 +292,11 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
 
             <div className="p-4">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    {/* Material */}
+                    {/* Material (múltiple selección) */}
                     <div>
                         <label className="block text-sm font-medium text-text-primary mb-1">
-                            Material (opcional)
+                            Material (opcional - mantén Ctrl/Cmd para seleccionar
+                            varios)
                         </label>
                         {loadingData ? (
                             <div className="text-sm text-text-secondary">
@@ -289,15 +304,23 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
                             </div>
                         ) : (
                             <select
-                                name="material_id"
-                                value={formData.material_id}
-                                onChange={handleChange}
+                                name="material_ids"
+                                value={formData.material_ids}
+                                onChange={(e) => {
+                                    const selectedOptions = Array.from(
+                                        e.target.selectedOptions,
+                                        (option) => parseInt(option.value),
+                                    );
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        material_ids: selectedOptions,
+                                    }));
+                                }}
                                 disabled={loading}
+                                multiple
+                                size={5}
                                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"
                             >
-                                <option value="">
-                                    -- Seleccionar material --
-                                </option>
                                 {material
                                     .filter((item) => item.disponible)
                                     .map((item) => (
@@ -306,6 +329,12 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
                                         </option>
                                     ))}
                             </select>
+                        )}
+                        {formData.material_ids.length > 0 && (
+                            <p className="text-xs text-text-secondary mt-1">
+                                {formData.material_ids.length} material(es)
+                                seleccionado(s)
+                            </p>
                         )}
                     </div>
 
@@ -320,8 +349,8 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
                             </div>
                         ) : (
                             <select
-                                name="aula_id"
-                                value={formData.aula_id}
+                                name="room_id"
+                                value={formData.room_id}
                                 onChange={handleChange}
                                 disabled={loading}
                                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm disabled:opacity-50"

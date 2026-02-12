@@ -27,8 +27,10 @@ const useMaterialStore = create(
                 set({ isLoading: true, error: null });
                 try {
                     const response = await materialAPI.getAll();
+                    // Backend retorna { data: [ materials ] }
+                    const materialData = response.data.data || response.data;
                     set({
-                        material: response.data,
+                        material: materialData,
                         isLoading: false,
                         lastFetch: Date.now(),
                     });

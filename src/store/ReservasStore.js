@@ -27,8 +27,10 @@ const useReservasStore = create(
                 set({ isLoading: true, error: null });
                 try {
                     const response = await reservasAPI.getAll();
+                    // Backend retorna { data: [ reservations ] }
+                    const reservasData = response.data.data || response.data;
                     set({
-                        reservas: response.data,
+                        reservas: reservasData,
                         isLoading: false,
                         lastFetch: Date.now(),
                     });

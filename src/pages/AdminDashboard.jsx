@@ -147,10 +147,9 @@ export default function AdminDashboard() {
                                                 const date = new Date(
                                                     reserva.fecha_inicio,
                                                 );
-                                                const userName = reserva.user_id
-                                                    ? getUserName(
-                                                          reserva.user_id,
-                                                      )
+                                                // Backend retorna objeto user anidado
+                                                const userName = reserva.user
+                                                    ? reserva.user.name
                                                     : "Invitado";
                                                 return (
                                                     <button
