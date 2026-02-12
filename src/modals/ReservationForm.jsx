@@ -295,8 +295,8 @@ export default function ReservationForm({ onBack, date, onSuccess, reserva }) {
                     {/* Material (múltiple selección) */}
                     <div>
                         <label className="block text-sm font-medium text-text-primary mb-1">
-                            Material (opcional - mantén Ctrl/Cmd para seleccionar
-                            varios)
+                            Material (opcional - mantén Ctrl/Cmd para
+                            seleccionar varios)
                         </label>
                         {loadingData ? (
                             <div className="text-sm text-text-secondary">
