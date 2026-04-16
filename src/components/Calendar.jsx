@@ -1,145 +1,127 @@
-import { useState } from "react";
-import DayPopup from "./DayPopup";
-
-const weekDays = ["L", "M", "X", "J", "V", "S", "D"];
-const monthNames = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-];
+import { useState, useEffect } from "react";
+import useReservasStore from "../store/ReservasStore";
+import useModalStore from "../store/ModalStore";
+import {
+    DAYS,
+    MONTHS,
+    generateCalendarCells,
+    hasDayReservations,
+    getPreviousMonth,
+    getNextMonth,
+} from "../utils/calendar";
 
 export default function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(null);
+    const [currentDate, setCurrentDate] = useState(new Date());
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+    // Stores
+    const { reservas, isLoading, fetchReservas, refresh } = useReservasStore();
+    const { openModal } = useModalStore();
 
-  // Día 1 del mes
-  const firstDayOfMonth = new Date(year, month, 1);
+    useEffect(() => {
+        fetchReservas();
+    }, [fetchReservas]);
 
-  // Convertimos domingo (0) a domingo (6)
-  const startDay = (firstDayOfMonth.getDay() + 6) % 7;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-  // Días del mes actual
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const cells = generateCalendarCells(year, month);
 
-  // Días del mes anterior
-  const daysInPrevMonth = new Date(year, month, 0).getDate();
+    const goToPrevMonth = () => {
+        setCurrentDate(getPreviousMonth(currentDate));
+    };
 
-  const cells = [];
+    const goToNextMonth = () => {
+        setCurrentDate(getNextMonth(currentDate));
+    };
 
-  // Días del mes anterior (gris)
-  for (let i = startDay - 1; i >= 0; i--) {
-    cells.push({
-      day: daysInPrevMonth - i,
-      currentMonth: false,
-    });
-  }
+    const handleDayClick = (cell) => {
+        if (cell.currentMonth) {
+            const clickedDate = new Date(year, month, cell.day);
+            openModal("reservationDay", {
+                date: clickedDate,
+                onReservationCreated: refresh,
+            });
+        }
+    };
 
-  // Días del mes actual
-  for (let i = 1; i <= daysInMonth; i++) {
-    cells.push({
-      day: i,
-      currentMonth: true,
-    });
-  }
+    return (
+        <div className="flex-1 flex flex-col bg-background">
+            {/* Header calendario */}
+            <div
+                className="
+        flex items-center justify-center gap-3
+        h-8
+        text-xs
+        text-text-primary
+      "
+            >
+                <button
+                    onClick={goToPrevMonth}
+                    className="px-2 text-primary-500 hover:text-primary-700"
+                >
+                    {"<"}
+                </button>
 
-  // Días del mes siguiente (gris)
-  while (cells.length < 42) {
-    cells.push({
-      day: cells.length - (startDay + daysInMonth) + 1,
-      currentMonth: false,
-    });
-  }
+                <span className="font-medium">
+                    {MONTHS.long[month]} {year}
+                </span>
 
-  const goToPrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
+                <button
+                    onClick={goToNextMonth}
+                    className="px-2 text-primary-500 hover:text-primary-700"
+                >
+                    {">"}
+                </button>
+            </div>
 
-  const goToNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
+            {/* Días de la semana */}
+            <div
+                className="
+        grid grid-cols-7
+        text-center text-[11px]
+        font-medium
+        text-text-secondary
+        border-b border-border
+      "
+            >
+                {DAYS.short.map((day) => (
+                    <div key={day} className="py-1">
+                        {day}
+                    </div>
+                ))}
+            </div>
 
-  const handleDayClick = (cell) => {
-    if (cell.currentMonth) {
-      const clickedDate = new Date(year, month, cell.day);
-      setSelectedDate(clickedDate);
-    }
-  };
-
-  return (
-    <div className="flex-1 flex flex-col bg-background">
-  {/* Header calendario */}
-  <div className="
-    flex items-center justify-center gap-3
-    h-8
-    text-xs
-    text-text-primary
-  ">
-    <button
-      onClick={goToPrevMonth}
-      className="px-2 text-primary-500 hover:text-primary-700"
-    >
-      {"<"}
-    </button>
-
-    <span className="font-medium">
-      {monthNames[month]} {year}
-    </span>
-
-    <button
-      onClick={goToNextMonth}
-      className="px-2 text-primary-500 hover:text-primary-700"
-    >
-      {">"}
-    </button>
-  </div>
-
-  {/* Días de la semana */}
-  <div className="
-    grid grid-cols-7
-    text-center text-[11px]
-    font-medium
-    text-text-secondary
-    border-b border-border
-  ">
-    {weekDays.map((day) => (
-      <div key={day} className="py-1">
-        {day}
-      </div>
-    ))}
-  </div>
-
-  {/* Grid */}
-  <div className="flex-1 grid grid-cols-7 grid-rows-6">
-    {cells.map((cell, index) => (
-      <div
-        key={index}
-        onClick={() => handleDayClick(cell)}
-        className={`
-          border border-border
-          p-1 text-xs
-          cursor-pointer
-          ${
-            cell.currentMonth
-              ? "bg-surface hover:bg-primary-50"
-              : "bg-surface-alt text-text-tertiary"
-          }
-        `}
-      >
-        {cell.day}
-      </div>
-    ))}
-  </div>
-
-  {/* Pop-up de día seleccionado */}
-  {selectedDate && (
-    <DayPopup 
-      date={selectedDate}
-      onClose={() => setSelectedDate(null)}
-    />
-  )}
-</div>
-
-  );
+            {/* Grid */}
+            <div className="flex-1 grid grid-cols-7 grid-rows-6">
+                {cells.map((cell, index) => (
+                    <div
+                        key={index}
+                        onClick={() => handleDayClick(cell)}
+                        className={`
+              border border-border
+              p-1 text-xs
+              cursor-pointer
+              relative
+              ${
+                  cell.currentMonth
+                      ? "bg-surface hover:bg-primary-50"
+                      : "bg-surface-alt text-text-tertiary"
+              }
+            `}
+                    >
+                        {cell.day}
+                        {cell.currentMonth &&
+                            hasDayReservations(
+                                cell.day,
+                                month,
+                                year,
+                                reservas,
+                            ) && (
+                                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-500 rounded-full"></div>
+                            )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }

@@ -1,153 +1,230 @@
-# Proyecto-Intermodular-FrontEnd
+# Sistema de Reservas - IES El Rincón
 
-<!-- TOC tocDepth:2..3 chapterDepth:2..6 -->
-
-- [🛠️ Stack Tecnológico](#🛠️-stack-tecnológico)
-- [🎨 Identidad Visual (IES El Rincón)](#🎨-identidad-visual-ies-el-rincón)
-    - [Modo Claro (Light Mode)](#modo-claro-light-mode)
-    - [Modo Oscuro (Dark Mode)](#modo-oscuro-dark-mode)
-- [🚀 Funcionalidades Principales](#🚀-funcionalidades-principales)
-- [📂 Estructura](#📂-estructura)
-- [📝 Backlog de Tareas - Frontend](#📝-backlog-de-tareas---frontend)
-    - [🎨 Diseño e Interfaz (Tailwind)](#🎨-diseño-e-interfaz-tailwind)
-    - [💻 Funcionalidades y UX](#💻-funcionalidades-y-ux)
-    - [⚖️ Legalidad y Calidad](#⚖️-legalidad-y-calidad)
-
-<!-- /TOC -->
-
-# IES El Rincón - Frontend (Portal de Reservas)
-
-Interfaz de usuario moderna y rápida para que el profesorado y el personal de conserjería gestionen el material del centro de forma eficiente.
+Aplicación web para la gestión de reservas de aulas, material educativo y recursos del centro. Permite a profesores, alumnos y personal administrativo gestionar reservas de forma eficiente con un calendario interactivo y sistema de administración completo.
 
 ## 🛠️ Stack Tecnológico
 
-- **Framework:** React con Next.js.
-- **Estilos:** Tailwind CSS (Paleta corporativa IES El Rincón).
-- **Consumo de datos:** Fetch/Axios hacia la API de Laravel.
+- **React 18.3.1** - Framework frontend
+- **Vite 5.1.0** - Build tool y dev server
+- **React Router DOM 6.22.0** - Navegación y rutas protegidas por rol
+- **Zustand 4.5.7** - Gestión de estado global
+- **Axios 1.6.8** - Cliente HTTP con interceptores de autenticación
+- **TailwindCSS 3.4.1** - Estilos utility-first
+- **JSON Server 0.17.4** - Mock API REST para desarrollo
 
-## 🎨 Identidad Visual (IES El Rincón)
+## ✨ Funcionalidades Implementadas
 
-### Modo Claro (Light Mode)
+### 🔐 Autenticación y Autorización
 
-**Colores Primarios:**
+- Sistema de login con tokens JWT
+- Persistencia de sesión en localStorage
+- Rutas protegidas por rol (admin, profesor, alumno)
+- Verificación automática de sesión al cargar la app
 
-- **primary-50:** `#e6f1f8` (Azul muy claro - Fondos suaves)
-- **primary-100:** `#b3d7ed` (Azul claro - Hover estados)
-- **primary-500:** `#005696` (Azul El Rincón - Principal)
-- **primary-600:** `#004577` (Azul oscuro - Hover)
-- **primary-700:** `#003559` (Azul muy oscuro - Active)
+### 📅 Gestión de Reservas
 
-**Colores de Acento:**
+- **Calendario interactivo** semanal con vista de franjas horarias
+- **Creación de reservas** con selección de aula, material, fechas y observaciones
+- **Validación de solapamientos** con mensajes específicos
+- **Vista "Mis Reservas"** agrupada por día con tarjetas uniformes
+- **Editar reservas** (abre modal pre-cargado)
+- **Cancelar reservas** con confirmación
+- Estados: activa, cancelada, completada, pendiente
 
-- **accent-50:** `#fce8e9` (Rojo muy claro)
-- **accent-100:** `#f7b8bc` (Rojo claro - Hover)
-- **accent-500:** `#e30613` (Rojo corporativo - Principal)
-- **accent-600:** `#b6050f` (Rojo oscuro - Hover)
-- **accent-700:** `#8a040b` (Rojo muy oscuro - Active)
+### 👨‍💼 Panel de Administración (conserjes/admins)
 
-**Fondos y Superficies:**
+- **Tab "Reservas"**: Listado de últimas 20 reservas con toda la información
+- **Tab "Material"**: CRUD completo (crear, editar, eliminar material)
+- **Tab "Aulas"**: CRUD completo (crear, editar, eliminar aulas)
+- **Tab "Usuarios"**: CRUD completo (crear, editar, eliminar usuarios)
+- **Reservas para otros usuarios**: Asignar usuario o marcar como invitado
+- **Gestión de estados**: Cambiar estado de reservas existentes
 
-- **background:** `#f9f9f9` (Fondo principal)
-- **surface:** `#ffffff` (Tarjetas, modales)
-- **surface-alt:** `#f3f4f6` (Fondo alternativo)
+### 🗂️ Gestión de Recursos
 
-**Textos:**
+- **Material**: nombre, código, barcode, categoría, estado, disponibilidad
+- **Aulas**: nombre, tipo, capacidad, ubicación, disponibilidad
+- **Usuarios**: name, email, password, role (admin/profesor/alumno)
+- Validación de campos obligatorios y tipos de datos
+- Actualización en tiempo real tras crear/editar/eliminar
 
-- **text-primary:** `#1f2937` (Texto principal)
-- **text-secondary:** `#6b7280` (Texto secundario)
-- **text-tertiary:** `#9ca3af` (Texto terciario)
-- **text-on-primary:** `#ffffff` (Texto sobre azul)
-- **text-on-accent:** `#ffffff` (Texto sobre rojo)
+### 🎯 Sistema de Modales
 
-**Bordes y Divisores:**
+- **Gestión global** con Zustand (ModalStore)
+- Soporte para **múltiples modales apilados**
+- Navegación modal-to-modal (replaceModal)
+- 7 tipos configurados: reservationDay, reservationForm, adminReservationForm, materialForm, aulaForm, userForm
 
-- **border:** `#e5e7eb` (Bordes sutiles)
-- **border-strong:** `#d1d5db` (Bordes destacados)
+### 💾 Caché Inteligente
 
-**Colores Semánticos:**
+- **ReservasStore**: caché de 30 segundos
+- **Material/Aulas/Users**: caché de 5 minutos
+- Parámetro `forceRefresh` para actualización manual
+- Evita peticiones redundantes al servidor
 
-- **success:** `#10b981` (Verde éxito)
-- **warning:** `#f59e0b` (Naranja advertencia)
-- **error:** `#ef4444` (Rojo error)
-- **info:** `#3b82f6` (Azul información)
+## 📂 Estructura del Proyecto
 
-### Modo Oscuro (Dark Mode)
+```
+src/
+├── App.jsx              # Componente raíz de la aplicación
+├── main.jsx             # Entry point (ReactDOM.render)
+├── index.css            # Estilos globales y Tailwind
+├── components/          # Componentes reutilizables
+│   ├── Calendar.jsx           # Calendario semanal con franjas horarias
+│   ├── Modal.jsx              # Wrapper base para modales
+│   ├── ModalManager.jsx       # Orchestrador de modales (conecta con ModalStore)
+│   ├── ReservationCard.jsx    # Tarjeta de reserva individual
+│   ├── SidebarButton.jsx      # Botón estilizado del sidebar
+│   ├── SidebarSeparator.jsx   # Línea separadora visual
+│   ├── TimeSlotItem.jsx       # Chip de reserva en calendario
+│   └── UserSidebar.jsx        # Sidebar con info de usuario
+├── modals/              # Formularios modales
+│   ├── AdminReservationForm.jsx   # Formulario admin (con asignación usuario)
+│   ├── AulaForm.jsx               # Crear/editar aulas
+│   ├── MaterialForm.jsx           # Crear/editar material
+│   ├── ReservationDay.jsx         # Modal de día completo con todas las reservas
+│   ├── ReservationForm.jsx        # Formulario de reserva (usuario estándar)
+│   └── UserForm.jsx               # Crear/editar usuarios
+├── layouts/             # Layouts de página
+│   ├── Footer.jsx             # Pie de página
+│   ├── Header.jsx             # Cabecera con navegación
+│   └── MainLayout.jsx         # Layout principal (Header + children + Footer)
+├── pages/               # Páginas principales
+│   ├── AdminDashboard.jsx     # Panel de administración con tabs
+│   ├── Home.jsx               # Calendario principal (página inicio)
+│   ├── Login.jsx              # Página de autenticación
+│   └── MyReservations.jsx     # Reservas del usuario
+├── router/              # Configuración de rutas
+│   ├── AppRouter.jsx          # Definición de rutas
+│   └── ProtectedRoute.jsx     # HOC para protección por rol
+├── store/               # Stores de Zustand
+│   ├── AuthStore.js           # Autenticación (persist + devtools)
+│   ├── ReservasStore.js       # Reservas (caché 30s)
+│   ├── MaterialStore.js       # Material (caché 5min)
+│   ├── AulasStore.js          # Aulas (caché 5min)
+│   ├── UsersStore.js          # Usuarios (caché 5min)
+│   └── ModalStore.js          # Sistema de modales global
+├── hooks/               # Custom hooks
+│   └── useReservationData.js  # Hook para obtener info completa de reserva
+├── lib/                 # Configuración API
+│   └── api.js                 # Endpoints y configuración Axios
+└── utils/               # Utilidades
+    └── calendar.js            # Helpers para calendario
 
-**Colores Primarios:**
+JsonServer/              # Mock API Backend
+├── server.cjs           # Servidor Express con autenticación y lógica custom
+└── db.json              # Base de datos JSON (auto-actualizable)
 
-- **primary-50:** `#1a3a4f` (Azul muy oscuro)
-- **primary-100:** `#245270` (Azul oscuro)
-- **primary-500:** `#3a8fc9` (Azul brillante)
-- **primary-600:** `#5ca7d8` (Azul claro)
-- **primary-700:** `#7dbce5` (Azul muy claro)
+.Docs/                   # Documentación
+├── JSON-Server-Setup.md       # Guía completa del servidor mock
+├── Zustand-Store-Guide.md     # Arquitectura de gestión de estado
+└── GuiaBackend.md             # Especificación de API para backend real
+```
 
-**Colores de Acento:**
+## 🚀 Instalación y Uso
 
-- **accent-50:** `#4a1315` (Rojo muy oscuro)
-- **accent-100:** `#6e1b1e` (Rojo oscuro)
-- **accent-500:** `#f72c3a` (Rojo brillante)
-- **accent-600:** `#fa5560` (Rojo claro)
-- **accent-700:** `#fc7d86` (Rojo muy claro)
+### 1. Instalar dependencias
 
-**Fondos y Superficies:**
+```bash
+npm install
+```
 
-- **background:** `#0f172a` (Fondo principal oscuro)
-- **surface:** `#1e293b` (Tarjetas, modales)
-- **surface-alt:** `#334155` (Fondo alternativo)
+### 2. Configurar variables de entorno (opcional)
 
-**Textos:**
+```bash
+# Copiar archivo de ejemplo
+cp .env.example .env
 
-- **text-primary:** `#f1f5f9` (Texto principal)
-- **text-secondary:** `#cbd5e1` (Texto secundario)
-- **text-tertiary:** `#94a3b8` (Texto terciario)
-- **text-on-primary:** `#ffffff` (Texto sobre azul)
-- **text-on-accent:** `#ffffff` (Texto sobre rojo)
+# El proyecto usa http://localhost:8000/api por defecto
+# Solo necesitas modificar si el servidor usa otro puerto
+VITE_API_URL=http://localhost:8000/api
+```
 
-**Bordes y Divisores:**
+### 3. Iniciar el proyecto
 
-- **border:** `#334155` (Bordes sutiles)
-- **border-strong:** `#475569` (Bordes destacados)
+**Opción A: Todo junto (recomendado)**
 
-**Colores Semánticos:**
+```bash
+npm run dev:all
+```
 
-- **success:** `#34d399` (Verde éxito)
-- **warning:** `#fbbf24` (Naranja advertencia)
-- **error:** `#f87171` (Rojo error)
-- **info:** `#60a5fa` (Azul información)
+**Opción B: Por separado**
 
-## 🚀 Funcionalidades Principales
+```bash
+# Terminal 1 - API
+npm run api
 
-1. **Dashboard de Usuario:** Visualización ordenada de las reservas activas del profesor.
-2. **Sistema de Escaneo:** Integración de lógica para identificación de materiales mediante códigos de barras.
-3. **Gestión Interactiva:** Filtros de búsqueda de material y botones de interacción para devoluciones.
-4. **Auth Guard:** Protección de rutas según el rol (Admin/User) devuelto por el Backend.
+# Terminal 2 - Frontend
+npm run dev
+```
 
-## 📂 Estructura
+### 4. Acceder a la aplicación
 
-- `/components`: Elementos reutilizables (Botones, inputs, tarjetas).
-- `/pages` o `/app`: Rutas principales (Login, Inventario, Reservas).
-- `/styles`: Configuración de Tailwind y variables de color.
+- **Frontend:** http://localhost:5173
+- **API:** http://localhost:8000/api
 
-**Responsables:** Antonio (Front / Legal) y Javier (Tech Lead / Front)
+## 👤 Usuarios de Prueba
 
-## 📝 Backlog de Tareas - Frontend
+| Email               | Contraseña  | Rol      | Permisos                            |
+| ------------------- | ----------- | -------- | ----------------------------------- |
+| admin@classy.com    | admin123    | admin    | CRUD completo en todos los recursos |
+| profesor@classy.com | profesor123 | profesor | Gestión de reservas y consultas     |
+| alumno@classy.com   | alumno123   | alumno   | Crear y gestionar propias reservas  |
 
-### 🎨 Diseño e Interfaz (Tailwind)
+## 📚 Documentación Adicional
 
-- [ ] Configurar la paleta de colores corporativa `ieselrincon` en el theme de Tailwind.
-- [ ] Crear el componente Header con buscador de ítems y menú de usuario desplegable.
-- [ ] Diseñar el Dashboard principal con la vista de calendario interactivo.
-- [ ] Implementar el Sidebar derecho para gestión de cuenta e historial.
+- **[JSON Server Setup](.Docs/JSON-Server-Setup.md)** - Guía completa del mock API backend
+- **[Zustand Store Guide](.Docs/Zustand-Store-Guide.md)** - Arquitectura de gestión de estado
+- **[Guía Backend API](.Docs/GuiaBackend.md)** - Especificación completa de endpoints para integración backend
 
-### 💻 Funcionalidades y UX
+## 🔧 Scripts Disponibles
 
-- [ ] Desarrollar el formulario de login y guardado de sesión (Auth Guard).
-- [ ] Crear el sistema de reserva mediante modales (Pop-ups) al hacer clic en días del calendario.
-- [ ] Implementar la vista de búsqueda específica por objeto y disponibilidad de fechas próximas.
-- [ ] Integrar botones de interacción para crear/eliminar reservas con mensajes de confirmación.
-- [ ] Programar la lógica de identificación de materiales mediante entrada de códigos de barras.
+```bash
+npm run dev        # Inicia el frontend (Vite)
+npm run api        # Inicia el servidor API (JSON Server)
+npm run dev:all    # Inicia API + Frontend simultáneamente
+npm run build      # Build de producción
+npm run preview    # Preview del build
+npm run lint       # Linter ESLint
+```
 
-### ⚖️ Legalidad y Calidad
+## 🏗️ Arquitectura
 
-- [ ] Añadir avisos legales y cláusulas RGPD en los formularios de captura de datos.
-- [ ] Asegurar que la interfaz sea totalmente responsive para acceso desde cualquier navegador.
+### Patrón de Stores
+
+Todos los stores siguen una estructura consistente:
+
+- **Estado:** items, isLoading, error, lastFetch
+- **Acciones:** fetch (con caché), create, update, delete
+- **Middleware:** devtools para debugging
+
+### Sistema de Autenticación
+
+1. Login → Token JWT almacenado en localStorage
+2. Interceptor Axios añade token a todas las peticiones
+3. Error 401 → Logout automático
+4. Verificación de sesión al cargar la app
+
+### Sistema de Modales
+
+- **ModalStore** gestiona el estado global
+- **ModalManager** renderiza según MODAL_CONFIG
+- **Soporte para navegación** entre modales sin cerrar
+- **Stack de modales** permite múltiples modales simultáneos
+
+## 🌐 API Endpoints
+
+**Autenticación**
+
+- `POST /api/login` - Iniciar sesión
+- `POST /api/logout` - Cerrar sesión
+- `GET /api/user` - Usuario actual
+
+**Recursos (CRUD completo)**
+
+- `/api/reservas` - Reservas
+- `/api/material` - Material educativo
+- `/api/aulas` - Espacios/aulas
+- `/api/users` - Usuarios (solo admin)
+
+Ver [JSON-Server-Setup.md](.Docs/JSON-Server-Setup.md) para documentación completa de endpoints.

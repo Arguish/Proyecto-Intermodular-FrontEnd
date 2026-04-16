@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_URL = {
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
     auth: {
         login: "/login",
         logout: "/logout",
@@ -17,6 +17,14 @@ const API_URL = {
         byId: (id) => `/material/${id}`,
         search: (query) => `/material/search?q=${query}`,
         byBarcode: (barcode) => `/material/barcode/${barcode}`,
+    },
+    aulas: {
+        base: "/aulas",
+        byId: (id) => `/aulas/${id}`,
+    },
+    users: {
+        base: "/users",
+        byId: (id) => `/users/${id}`,
     },
 };
 
@@ -76,6 +84,8 @@ export const reservasAPI = {
 
     delete: (id) => api.delete(API_URL.reservas.byId(id)),
 
+    cancel: (id) => api.post(`/reservas/${id}/cancel`),
+
     devolver: (id) => api.post(API_URL.reservas.devolver(id)),
 };
 
@@ -87,6 +97,36 @@ export const materialAPI = {
     search: (query) => api.get(API_URL.material.search(query)),
 
     getByBarcode: (barcode) => api.get(API_URL.material.byBarcode(barcode)),
+
+    create: (data) => api.post(API_URL.material.base, data),
+
+    update: (id, data) => api.put(API_URL.material.byId(id), data),
+
+    delete: (id) => api.delete(API_URL.material.byId(id)),
+};
+
+export const aulasAPI = {
+    getAll: () => api.get(API_URL.aulas.base),
+
+    getById: (id) => api.get(API_URL.aulas.byId(id)),
+
+    create: (data) => api.post(API_URL.aulas.base, data),
+
+    update: (id, data) => api.put(API_URL.aulas.byId(id), data),
+
+    delete: (id) => api.delete(API_URL.aulas.byId(id)),
+};
+
+export const usersAPI = {
+    getAll: () => api.get(API_URL.users.base),
+
+    getById: (id) => api.get(API_URL.users.byId(id)),
+
+    create: (data) => api.post(API_URL.users.base, data),
+
+    update: (id, data) => api.put(API_URL.users.byId(id), data),
+
+    delete: (id) => api.delete(API_URL.users.byId(id)),
 };
 
 export default api;
