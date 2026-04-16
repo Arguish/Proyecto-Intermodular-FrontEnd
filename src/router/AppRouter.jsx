@@ -5,6 +5,7 @@ import Login from "../pages/Login";
 import MyReservations from "../pages/MyReservations";
 import AdminDashboard from "../pages/AdminDashboard";
 import ProtectedRoute from "./ProtectedRoute";
+import ErrorPage from "../pages/ErrorPage";
 
 export default function AppRouter() {
     return (
@@ -28,6 +29,7 @@ export default function AppRouter() {
                     }
                 />
             </Route>
+            <Route path="*" element={<ErrorPage />} />
         </Routes>
     );
 }
