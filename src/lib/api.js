@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const normalizeBaseUrl = (url) => (url ? url.replace(/\/+$/, "") : url);
+
 const API_URL = {
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+    baseURL: normalizeBaseUrl(import.meta.env.VITE_API_URL || "/api"),
     auth: {
         login: "/login",
         logout: "/logout",
@@ -31,16 +33,14 @@ const API_URL = {
 // Configuración base de Axios para la API de Laravel
 const api = axios.create({
     baseURL: API_URL.baseURL,
-    headers: {
-        "Content-Type": "application/json",
-    },
 });
 
 // Interceptor para añadir el token de autenticación
 api.interceptors.request.use(
     (config) => {
+        const isLoginRequest = config.url?.includes(API_URL.auth.login);
         const token = localStorage.getItem("auth_token");
-        if (token) {
+        if (token && !isLoginRequest) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -66,7 +66,11 @@ api.interceptors.response.use(
 // Funciones de API
 export const authAPI = {
     login: (email, password) =>
-        api.post(API_URL.auth.login, { email, password }),
+        api.post(API_URL.auth.login, new URLSearchParams({ email, password }), {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        }),
 
     logout: () => api.post(API_URL.auth.logout),
 
