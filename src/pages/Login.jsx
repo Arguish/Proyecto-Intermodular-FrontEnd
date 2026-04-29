@@ -23,6 +23,7 @@ export default function Login() {
             className="
       h-screen
       flex items-center justify-center
+            px-4
       bg-background
     "
         >

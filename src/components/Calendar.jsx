@@ -50,7 +50,7 @@ export default function Calendar() {
             <div
                 className="
         flex items-center justify-center gap-3
-        h-8
+        h-9 sm:h-8
         text-xs
         text-text-primary
         "
@@ -78,7 +78,7 @@ export default function Calendar() {
             <div
                 className="
         grid grid-cols-7
-        text-center text-[11px]
+            text-center text-[10px] sm:text-[11px]
         font-medium
         text-text-secondary
         border-b border-border
@@ -99,7 +99,7 @@ export default function Calendar() {
                         onClick={() => handleDayClick(cell)}
                         className={`
               border border-border
-              p-1 text-xs
+              p-0.5 sm:p-1 text-[11px] sm:text-xs
               cursor-pointer
               relative
               ${

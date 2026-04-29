@@ -2,10 +2,10 @@ import { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
 const sizeClasses = {
-    sm: "w-[400px]",
-    md: "w-[500px]",
-    lg: "w-[700px]",
-    xl: "w-[900px]",
+    sm: "w-full sm:w-[400px]",
+    md: "w-full sm:w-[500px]",
+    lg: "w-full sm:w-[700px]",
+    xl: "w-full sm:w-[900px]",
     full: "w-full max-w-[95vw]",
 };
 

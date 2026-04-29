@@ -90,10 +90,10 @@ export default function AdminDashboard() {
         loadingReservas || loadingMaterial || loadingAulas || loadingUsers;
 
     return (
-        <div className="flex-1 p-6 bg-background overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-6 bg-background overflow-y-auto">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-text-primary mb-2">
+                <div className="mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
                         Dashboard Administrador
                     </h1>
                     <p className="text-text-secondary">
@@ -108,12 +108,12 @@ export default function AdminDashboard() {
                 ) : (
                     <div className="bg-surface border border-border rounded-lg overflow-hidden">
                         {/* Tabs Header */}
-                        <div className="flex border-b border-border bg-background">
+                        <div className="flex flex-wrap border-b border-border bg-background">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex-1 px-4 py-4 text-sm font-medium transition-colors ${
+                                    className={`w-full sm:flex-1 px-3 sm:px-4 py-3 sm:py-4 text-sm font-medium transition-colors ${
                                         activeTab === tab.id
                                             ? "text-primary-600 border-b-2 border-primary-600 bg-surface"
                                             : "text-text-secondary hover:text-text-primary hover:bg-surface"
@@ -126,10 +126,10 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Tab Content */}
-                        <div className="p-6">
+                        <div className="p-3 sm:p-6">
                             {activeTab === "reservas" && (
                                 <div>
-                                    <div className="flex justify-between items-center mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                                         <h2 className="text-xl font-semibold text-text-primary">
                                             Reservas Recientes
                                         </h2>
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
 
                             {activeTab === "material" && (
                                 <div>
-                                    <div className="flex justify-between items-center mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                                         <h2 className="text-xl font-semibold text-text-primary">
                                             Material
                                         </h2>
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
 
                             {activeTab === "aulas" && (
                                 <div>
-                                    <div className="flex justify-between items-center mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                                         <h2 className="text-xl font-semibold text-text-primary">
                                             Aulas
                                         </h2>
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
 
                             {activeTab === "usuarios" && (
                                 <div>
-                                    <div className="flex justify-between items-center mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                                         <h2 className="text-xl font-semibold text-text-primary">
                                             Usuarios
                                         </h2>

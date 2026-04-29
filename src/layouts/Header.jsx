@@ -29,17 +29,18 @@ export default function Header() {
             absolute right-0
             flex items-center gap-3
             bg-surface-alt
-            px-4
+            px-3 sm:px-4
             py-0
             h-full
             text-text-primary
             hover:text-primary-500
             transition-colors
             cursor-pointer
+            max-w-[70vw] sm:max-w-none
           "
                     title="Mi perfil"
                 >
-                    <span className="text-xs">Hola, {user.name}</span>
+                    <span className="text-xs truncate">Hola, {user.name}</span>
                     <svg
                         width="16"
                         height="16"

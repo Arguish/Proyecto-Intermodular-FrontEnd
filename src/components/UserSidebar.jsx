@@ -23,7 +23,7 @@ export default function UserSidebar({ isOpen, onClose }) {
             {/* Sidebar */}
             <div
                 className={`
-          fixed top-12 right-0 h-[calc(100vh-12px)] w-64 bg-surface-alt z-50
+                    fixed top-12 right-0 h-[calc(100vh-3rem)] w-full sm:w-64 bg-surface-alt z-50
           transform transition-transform duration-300 ease-in-out
           flex flex-col
           border-l border-border
@@ -70,14 +70,23 @@ export default function UserSidebar({ isOpen, onClose }) {
                             </p>
                             <div className="space-y-1">
                                 <SidebarButton
+                                    text="Calendario"
+                                    onClick={() => handleNavigation("/")}
+                                />
+
+                                <SidebarButton
                                     text="Mis Reservas"
-                                    onClick={() => handleNavigation("/my-reservations")}
+                                    onClick={() =>
+                                        handleNavigation("/my-reservations")
+                                    }
                                 />
 
                                 {user?.role === "admin" && (
                                     <SidebarButton
                                         text="Dashboard"
-                                        onClick={() => handleNavigation("/admin/dashboard")}
+                                        onClick={() =>
+                                            handleNavigation("/admin/dashboard")
+                                        }
                                     />
                                 )}
                             </div>

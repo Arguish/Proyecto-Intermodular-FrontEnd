@@ -72,7 +72,7 @@ export default function ReservationDay({
                 <button
                     onClick={handleReserve}
                     className="
-                        w-32
+                        w-full sm:w-32
                         bg-primary-500
                         hover:bg-primary-600
                         text-white
