@@ -53,7 +53,7 @@ export default function Calendar() {
         h-8
         text-xs
         text-text-primary
-      "
+        "
             >
                 <button
                     onClick={goToPrevMonth}
@@ -82,7 +82,7 @@ export default function Calendar() {
         font-medium
         text-text-secondary
         border-b border-border
-      "
+        "
             >
                 {DAYS.short.map((day) => (
                     <div key={day} className="py-1">

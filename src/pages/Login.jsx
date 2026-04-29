@@ -83,7 +83,7 @@ export default function Login() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="tu@email.com"
+                            placeholder="admin@example.com"
                             className="
                 w-full
                 px-3
@@ -116,7 +116,7 @@ export default function Login() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Tu contraseña"
+                            placeholder="password"
                             className="
                 w-full
                 px-3
