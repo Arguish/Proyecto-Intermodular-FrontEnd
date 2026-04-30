@@ -119,8 +119,8 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
 
             // Backend retorna materials como array y room como objeto
             if (newReserva.material_ids && r.materials) {
-                const rMaterialIds = r.materials.map((m) => m.id);
-                const hasOverlap = newReserva.material_ids.some((id) =>
+                const rMaterialIds = (r.materials || []).map((m) => m.id);
+                const hasOverlap = (newReserva.material_ids || []).some((id) =>
                     rMaterialIds.includes(id),
                 );
                 if (hasOverlap) return true;
@@ -155,8 +155,8 @@ export default function AdminReservationForm({ reserva, date, onSuccess }) {
             const conflictingResources = [];
 
             if (conflict.materials && newReserva.material_ids) {
-                const conflictMaterialIds = conflict.materials.map((m) => m.id);
-                const hasConflict = newReserva.material_ids.some((id) =>
+                const conflictMaterialIds = (conflict.materials || []).map((m) => m.id);
+                const hasConflict = (newReserva.material_ids || []).some((id) =>
                     conflictMaterialIds.includes(id),
                 );
                 if (hasConflict) conflictingResources.push("material");

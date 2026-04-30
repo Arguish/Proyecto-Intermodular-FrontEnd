@@ -14,9 +14,10 @@ const useAulasStore = create(
             // Fetch con caché inteligente
             fetchAulas: async (forceRefresh = false) => {
                 const { aulas, lastFetch } = get();
+                const currentAulas = Array.isArray(aulas) ? aulas : [];
 
                 // Si ya hay datos y no es refresh forzado, usar caché
-                if (!forceRefresh && aulas.length > 0 && lastFetch) {
+                if (!forceRefresh && currentAulas.length > 0 && lastFetch) {
                     const timeSinceLastFetch = Date.now() - lastFetch;
                     // Caché válido por 5 minutos
                     if (timeSinceLastFetch < 300000) {
@@ -28,7 +29,9 @@ const useAulasStore = create(
                 try {
                     const response = await aulasAPI.getAll();
                     // Backend retorna { data: [ aulas ] }
-                    const aulasData = response.data.data || response.data;
+                    let aulasData = response.data.data || response.data;
+                    // Garantizar que siempre sea un array válido
+                    aulasData = Array.isArray(aulasData) ? aulasData : [];
                     set({
                         aulas: aulasData,
                         isLoading: false,
@@ -39,6 +42,7 @@ const useAulasStore = create(
                     set({
                         error: error.message,
                         isLoading: false,
+                        aulas: [], // Asegurar array vacío en error
                     });
                 }
             },
@@ -46,13 +50,14 @@ const useAulasStore = create(
             // Obtener aula por ID (del estado local)
             getAulaById: (id) => {
                 const { aulas } = get();
-                return aulas.find((a) => a.id === parseInt(id));
+                const currentAulas = Array.isArray(aulas) ? aulas : [];
+                return currentAulas.find((a) => a.id === parseInt(id));
             },
 
             // Añadir aula al estado local
             addAula: (aula) => {
                 set((state) => ({
-                    aulas: [...state.aulas, aula],
+                    aulas: [...(Array.isArray(state.aulas) ? state.aulas : []), aula],
                 }));
             },
 
@@ -78,7 +83,7 @@ const useAulasStore = create(
                 try {
                     const response = await aulasAPI.update(id, data);
                     set((state) => ({
-                        aulas: state.aulas.map((a) =>
+                        aulas: (Array.isArray(state.aulas) ? state.aulas : []).map((a) =>
                             a.id === id ? response.data : a,
                         ),
                     }));
@@ -99,7 +104,7 @@ const useAulasStore = create(
                 try {
                     await aulasAPI.delete(id);
                     set((state) => ({
-                        aulas: state.aulas.filter((a) => a.id !== id),
+                        aulas: (Array.isArray(state.aulas) ? state.aulas : []).filter((a) => a.id !== id),
                     }));
                     return { success: true };
                 } catch (error) {

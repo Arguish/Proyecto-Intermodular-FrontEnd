@@ -79,7 +79,7 @@ export function generateCalendarCells(year, month) {
  */
 export function hasDayReservations(day, month, year, reservas) {
     const dateToCheck = new Date(year, month, day);
-    return reservas.some((reserva) => {
+    return (reservas || []).some((reserva) => {
         const reservaDate = new Date(reserva.fecha_inicio);
         return (
             reservaDate.getDate() === dateToCheck.getDate() &&

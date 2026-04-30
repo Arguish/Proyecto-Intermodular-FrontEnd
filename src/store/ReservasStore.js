@@ -14,9 +14,10 @@ const useReservasStore = create(
             // Fetch con caché inteligente
             fetchReservas: async (forceRefresh = false) => {
                 const { reservas, lastFetch } = get();
+                const currentReservas = Array.isArray(reservas) ? reservas : [];
 
                 // Si ya hay datos y no es refresh forzado, usar caché
-                if (!forceRefresh && reservas.length > 0 && lastFetch) {
+                if (!forceRefresh && currentReservas.length > 0 && lastFetch) {
                     const timeSinceLastFetch = Date.now() - lastFetch;
                     // Caché válido por 30 segundos
                     if (timeSinceLastFetch < 30000) {
@@ -28,7 +29,9 @@ const useReservasStore = create(
                 try {
                     const response = await reservasAPI.getAll();
                     // Backend retorna { data: [ reservations ] }
-                    const reservasData = response.data.data || response.data;
+                    let reservasData = response.data.data || response.data;
+                    // Garantizar que siempre sea un array válido
+                    reservasData = Array.isArray(reservasData) ? reservasData : [];
                     set({
                         reservas: reservasData,
                         isLoading: false,
@@ -39,6 +42,7 @@ const useReservasStore = create(
                     set({
                         error: error.message,
                         isLoading: false,
+                        reservas: [], // Asegurar array vacío en error
                     });
                 }
             },
@@ -46,7 +50,7 @@ const useReservasStore = create(
             // Añadir reserva al estado local
             addReserva: (reserva) => {
                 set((state) => ({
-                    reservas: [...state.reservas, reserva],
+                    reservas: [...(Array.isArray(state.reservas) ? state.reservas : []), reserva],
                 }));
             },
 
@@ -72,7 +76,7 @@ const useReservasStore = create(
                 try {
                     const response = await reservasAPI.update(id, data);
                     set((state) => ({
-                        reservas: state.reservas.map((r) =>
+                        reservas: (Array.isArray(state.reservas) ? state.reservas : []).map((r) =>
                             r.id === id ? response.data : r,
                         ),
                     }));
@@ -93,7 +97,7 @@ const useReservasStore = create(
                 try {
                     await reservasAPI.delete(id);
                     set((state) => ({
-                        reservas: state.reservas.filter((r) => r.id !== id),
+                        reservas: (Array.isArray(state.reservas) ? state.reservas : []).filter((r) => r.id !== id),
                     }));
                     return { success: true };
                 } catch (error) {

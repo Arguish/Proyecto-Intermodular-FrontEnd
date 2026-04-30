@@ -14,9 +14,10 @@ const useUsersStore = create(
             // Fetch con caché inteligente
             fetchUsers: async (forceRefresh = false) => {
                 const { users, lastFetch } = get();
+                const currentUsers = Array.isArray(users) ? users : [];
 
                 // Si ya hay datos y no es refresh forzado, usar caché
-                if (!forceRefresh && users.length > 0 && lastFetch) {
+                if (!forceRefresh && currentUsers.length > 0 && lastFetch) {
                     const timeSinceLastFetch = Date.now() - lastFetch;
                     // Caché válido por 5 minutos
                     if (timeSinceLastFetch < 300000) {
@@ -28,7 +29,9 @@ const useUsersStore = create(
                 try {
                     const response = await usersAPI.getAll();
                     // Backend retorna { data: [ users ] }
-                    const usersData = response.data.data || response.data;
+                    let usersData = response.data.data || response.data;
+                    // Garantizar que siempre sea un array válido
+                    usersData = Array.isArray(usersData) ? usersData : [];
                     set({
                         users: usersData,
                         isLoading: false,
@@ -39,6 +42,7 @@ const useUsersStore = create(
                     set({
                         error: error.message,
                         isLoading: false,
+                        users: [], // Asegurar array vacío en error
                     });
                 }
             },
@@ -46,13 +50,14 @@ const useUsersStore = create(
             // Obtener usuario por ID
             getUserById: (userId) => {
                 const { users } = get();
-                return users.find((u) => u.id === userId);
+                const currentUsers = Array.isArray(users) ? users : [];
+                return currentUsers.find((u) => u.id === userId);
             },
 
             // Añadir usuario al estado local
             addUser: (user) => {
                 set((state) => ({
-                    users: [...state.users, user],
+                    users: [...(Array.isArray(state.users) ? state.users : []), user],
                 }));
             },
 
@@ -78,7 +83,7 @@ const useUsersStore = create(
                 try {
                     const response = await usersAPI.update(id, data);
                     set((state) => ({
-                        users: state.users.map((u) =>
+                        users: (Array.isArray(state.users) ? state.users : []).map((u) =>
                             u.id === id ? response.data : u,
                         ),
                     }));
@@ -99,7 +104,7 @@ const useUsersStore = create(
                 try {
                     await usersAPI.delete(id);
                     set((state) => ({
-                        users: state.users.filter((u) => u.id !== id),
+                        users: (Array.isArray(state.users) ? state.users : []).filter((u) => u.id !== id),
                     }));
                     return { success: true };
                 } catch (error) {

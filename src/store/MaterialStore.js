@@ -14,9 +14,10 @@ const useMaterialStore = create(
             // Fetch con caché inteligente
             fetchMaterial: async (forceRefresh = false) => {
                 const { material, lastFetch } = get();
+                const currentMaterial = Array.isArray(material) ? material : [];
 
                 // Si ya hay datos y no es refresh forzado, usar caché
-                if (!forceRefresh && material.length > 0 && lastFetch) {
+                if (!forceRefresh && currentMaterial.length > 0 && lastFetch) {
                     const timeSinceLastFetch = Date.now() - lastFetch;
                     // Caché válido por 5 minutos
                     if (timeSinceLastFetch < 300000) {
@@ -28,7 +29,9 @@ const useMaterialStore = create(
                 try {
                     const response = await materialAPI.getAll();
                     // Backend retorna { data: [ materials ] }
-                    const materialData = response.data.data || response.data;
+                    let materialData = response.data.data || response.data;
+                    // Garantizar que siempre sea un array válido
+                    materialData = Array.isArray(materialData) ? materialData : [];
                     set({
                         material: materialData,
                         isLoading: false,
@@ -39,6 +42,7 @@ const useMaterialStore = create(
                     set({
                         error: error.message,
                         isLoading: false,
+                        material: [], // Asegurar array vacío en error
                     });
                 }
             },
@@ -46,13 +50,14 @@ const useMaterialStore = create(
             // Obtener material por ID (del estado local)
             getMaterialById: (id) => {
                 const { material } = get();
-                return material.find((m) => m.id === parseInt(id));
+                const currentMaterial = Array.isArray(material) ? material : [];
+                return currentMaterial.find((m) => m.id === parseInt(id));
             },
 
             // Añadir material al estado local
             addMaterial: (item) => {
                 set((state) => ({
-                    material: [...state.material, item],
+                    material: [...(Array.isArray(state.material) ? state.material : []), item],
                 }));
             },
 
@@ -78,7 +83,7 @@ const useMaterialStore = create(
                 try {
                     const response = await materialAPI.update(id, data);
                     set((state) => ({
-                        material: state.material.map((m) =>
+                        material: (Array.isArray(state.material) ? state.material : []).map((m) =>
                             m.id === id ? response.data : m,
                         ),
                     }));
@@ -99,7 +104,7 @@ const useMaterialStore = create(
                 try {
                     await materialAPI.delete(id);
                     set((state) => ({
-                        material: state.material.filter((m) => m.id !== id),
+                        material: (Array.isArray(state.material) ? state.material : []).filter((m) => m.id !== id),
                     }));
                     return { success: true };
                 } catch (error) {
